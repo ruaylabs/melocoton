@@ -5,12 +5,11 @@ use std::fs;
 use std::io;
 use std::net::TcpListener;
 use std::path::Path;
-use std::process::Command;
 use std::sync::Mutex;
 use tauri::async_runtime::spawn;
-use tauri::path::BaseDirectory;
 use tauri::Manager;
 use tauri::State;
+use tauri_plugin_shell::ShellExt;
 use tokio::time::{sleep, Duration};
 use url::Url;
 
@@ -78,6 +77,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![open_new_window])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -157,9 +157,6 @@ async fn setup(
     let base_dir = app_handle.path().app_data_dir()?;
     migrate_app_data(&base_dir)?;
 
-    let webserver_path = app_handle
-        .path()
-        .resolve("binaries/webserver", BaseDirectory::Resource)?;
     let database_path = base_dir.join(Path::new("melocoton.db"));
 
     env::set_var("DATABASE_PATH", database_path);
@@ -173,7 +170,7 @@ async fn setup(
     env::set_var("RELEASE_MODE", "interactive"); // load modules on demand
 
     // start web server
-    let _ = Command::new(webserver_path).spawn()?;
+    let (_receiver, _child) = app_handle.shell().sidecar("webserver")?.spawn()?;
 
     let raw_url = format!("http://localhost:{}", port);
     let timeout = 10;

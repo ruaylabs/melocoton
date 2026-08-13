@@ -38,12 +38,12 @@ fi
 MIX_ENV=prod mix release || exit 1
 
 if [[ "$OS_NAME" == "Darwin" ]]; then
-  cp ./burrito_out/melocoton_macos ./src-tauri/binaries/webserver
+  cp ./burrito_out/melocoton_macos ./src-tauri/binaries/webserver-aarch64-apple-darwin
 elif [[ "$OS_NAME" == "GNU/Linux" ]]; then
   if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
-    cp ./burrito_out/melocoton_linux_arm ./src-tauri/binaries/webserver
+    cp ./burrito_out/melocoton_linux_arm ./src-tauri/binaries/webserver-aarch64-unknown-linux-gnu
   else
-    cp ./burrito_out/melocoton_linux ./src-tauri/binaries/webserver
+    cp ./burrito_out/melocoton_linux ./src-tauri/binaries/webserver-x86_64-unknown-linux-gnu
   fi
 else
   echo "Unsupported platform"

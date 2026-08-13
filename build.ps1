@@ -26,7 +26,7 @@ mix release
 
 # Copy Burrito output to Tauri binaries directory
 $source = ".\burrito_out\melocoton_windows.exe"
-$dest = ".\src-tauri\binaries\webserver.exe"
+$dest = ".\src-tauri\binaries\webserver-x86_64-pc-windows-msvc.exe"
 
 if (Test-Path $source) {
     Copy-Item -Path $source -Destination $dest -Force
