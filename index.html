@@ -799,61 +799,6 @@
         margin-top: 1px;
       }
 
-      /* ─── Notarization note ─── */
-      .notarize-note {
-        margin: 0 20px 16px;
-        padding: 12px 14px;
-        border: 1px solid var(--border);
-        border-left: 2px solid var(--accent2);
-        border-radius: 4px;
-        background: color-mix(in srgb, var(--surface2) 60%, transparent);
-      }
-
-      .notarize-note-label {
-        font-size: 10px;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--accent2);
-        margin-bottom: 6px;
-      }
-
-      .notarize-note p {
-        font-size: 11px;
-        color: var(--text-muted);
-        line-height: 1.6;
-        margin-bottom: 8px;
-      }
-
-      .notarize-cmd {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 3px;
-        padding: 7px 10px;
-        font-size: 11px;
-        color: var(--accent);
-        font-family: var(--font-mono);
-        cursor: text;
-        user-select: all;
-      }
-
-      .notarize-copy {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--text-dim);
-        font-size: 13px;
-        padding: 0 2px;
-        flex-shrink: 0;
-        transition: color 0.15s;
-        font-family: var(--font-mono);
-      }
-
-      .notarize-copy:hover { color: var(--accent2); }
-
       /* ─── Footer ─── */
       footer {
         border-top: 1px solid var(--border);
@@ -1308,7 +1253,7 @@
           <div class="download-platform">
             <div class="platform-header">macOS</div>
             <div class="platform-links">
-              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.30.0.dmg" class="platform-link plausible-event-name=download plausible-event-platform=macos">
+              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.32.0.dmg" class="platform-link plausible-event-name=download plausible-event-platform=macos">
                 <div class="platform-link-left">
                   <span class="pl-icon"></span>
                   <div>
@@ -1319,20 +1264,11 @@
                 <span class="platform-link-arrow">→</span>
               </a>
             </div>
-            <!-- Notarization note -->
-            <div class="notarize-note">
-              <div class="notarize-note-label">⚠ Not notarized</div>
-              <p>macOS may block the app on first launch. Run this command in Terminal after installing to remove the quarantine flag:</p>
-              <div class="notarize-cmd" id="xattrCmd">
-                <span>xattr -cr /Applications/melocoton.app</span>
-                <button class="notarize-copy" onclick="copyCmd()" title="Copy command">⎘</button>
-              </div>
-            </div>
           </div>
           <div class="download-platform">
             <div class="platform-header">Linux</div>
             <div class="platform-links">
-              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.30.0.deb" class="platform-link plausible-event-name=download plausible-event-platform=linux-deb">
+              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.32.0.deb" class="platform-link plausible-event-name=download plausible-event-platform=linux-deb">
                 <div class="platform-link-left">
                   <span class="pl-icon">🐧</span>
                   <div>
@@ -1342,7 +1278,7 @@
                 </div>
                 <span class="platform-link-arrow">→</span>
               </a>
-              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.30.0-arm64.deb" class="platform-link plausible-event-name=download plausible-event-platform=linux-arm">
+              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.32.0-arm64.deb" class="platform-link plausible-event-name=download plausible-event-platform=linux-arm">
                 <div class="platform-link-left">
                   <span class="pl-icon">🐧</span>
                   <div>
@@ -1352,7 +1288,7 @@
                 </div>
                 <span class="platform-link-arrow">→</span>
               </a>
-              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.30.0.AppImage" class="platform-link plausible-event-name=download plausible-event-platform=linux-appimage">
+              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.32.0.AppImage" class="platform-link plausible-event-name=download plausible-event-platform=linux-appimage">
                 <div class="platform-link-left">
                   <span class="pl-icon">📦</span>
                   <div>
@@ -1362,7 +1298,7 @@
                 </div>
                 <span class="platform-link-arrow">→</span>
               </a>
-              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.30.0-arm64.AppImage" class="platform-link plausible-event-name=download plausible-event-platform=linux-appimage-arm">
+              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.32.0-arm64.AppImage" class="platform-link plausible-event-name=download plausible-event-platform=linux-appimage-arm">
                 <div class="platform-link-left">
                   <span class="pl-icon">📦</span>
                   <div>
@@ -1377,7 +1313,7 @@
           <div class="download-platform">
             <div class="platform-header">Windows</div>
             <div class="platform-links">
-              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.30.0.msi" class="platform-link plausible-event-name=download plausible-event-platform=windows">
+              <a href="https://github.com/ruaylabs/melocoton/releases/latest/download/melocoton-0.32.0.msi" class="platform-link plausible-event-name=download plausible-event-platform=windows">
                 <div class="platform-link-left">
                   <span class="pl-icon">🪟</span>
                   <div>
@@ -1518,16 +1454,6 @@
         ['normal','insert','nav'].forEach(t => {
           const el = document.getElementById('tab-' + t);
           if (el) el.style.display = t === tab ? '' : 'none';
-        });
-      }
-
-      /* ── Copy xattr command ── */
-      function copyCmd() {
-        navigator.clipboard.writeText('xattr -cr /Applications/melocoton.app').then(() => {
-          const btn = document.querySelector('.notarize-copy');
-          btn.textContent = '✓';
-          setTimeout(() => btn.textContent = '⎘', 1800);
-          plausible('copy xattr command');
         });
       }
     </script>
