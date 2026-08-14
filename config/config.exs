@@ -9,7 +9,8 @@ import Config
 
 config :melocoton,
   ecto_repos: [Melocoton.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  support_email: "support@ruaylabs.com"
 
 # Configures the endpoint
 config :melocoton, MelocotonWeb.Endpoint,
