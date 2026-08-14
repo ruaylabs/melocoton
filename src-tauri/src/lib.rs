@@ -8,13 +8,16 @@ use std::path::Path;
 use std::sync::Mutex;
 use tauri::async_runtime::spawn;
 use tauri::Manager;
+use tauri::RunEvent;
 use tauri::State;
+use tauri_plugin_shell::process::CommandChild;
 use tauri_plugin_shell::ShellExt;
 use tokio::time::{sleep, Duration};
 use url::Url;
 
 struct AppData {
     port: u16,
+    webserver_child: Option<CommandChild>,
 }
 
 const OLD_IDENTIFIER: &str = "app.melocoton.app";
@@ -68,7 +71,10 @@ pub fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         .setup(|app| {
             let port = get_available_port()?;
 
-            app.manage(Mutex::new(AppData { port }));
+            app.manage(Mutex::new(AppData {
+                port,
+                webserver_child: None,
+            }));
 
             println!("Running web application on port: {}", port);
 
@@ -79,8 +85,21 @@ pub fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![open_new_window])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())?
+        .run(|app, event| {
+            if let RunEvent::Exit = event {
+                let child = app
+                    .state::<Mutex<AppData>>()
+                    .lock()
+                    .unwrap()
+                    .webserver_child
+                    .take();
+
+                if let Some(child) = child {
+                    shutdown_webserver(child);
+                }
+            }
+        });
 
     Ok(())
 }
@@ -170,7 +189,13 @@ async fn setup(
     env::set_var("RELEASE_MODE", "interactive"); // load modules on demand
 
     // start web server
-    let (_receiver, _child) = app_handle.shell().sidecar("webserver")?.spawn()?;
+    let (_receiver, child) = app_handle.shell().sidecar("webserver")?.spawn()?;
+
+    app_handle
+        .state::<Mutex<AppData>>()
+        .lock()
+        .unwrap()
+        .webserver_child = Some(child);
 
     let raw_url = format!("http://localhost:{}", port);
     let timeout = 10;
@@ -185,6 +210,88 @@ async fn setup(
     Ok(())
 }
 
+fn shutdown_webserver(child: CommandChild) {
+    let pid = child.pid();
+    println!("Shutting down web server (pid {pid})...");
+
+    terminate_process_tree(pid);
+
+    // Kill the wrapper again through the handle so its exit status is reaped.
+    let _ = child.kill();
+}
+
+/// Terminates `pid` together with all of its descendants.
+///
+/// The webserver sidecar is a Burrito-wrapped release: the wrapper spawns the
+/// actual BEAM (`beam.smp`) as a child process, so killing only the wrapper
+/// would orphan the BEAM. Descendants are killed before their parents to
+/// prevent them from being re-parented (and thus missed) mid-walk.
+fn terminate_process_tree(pid: u32) {
+    #[cfg(windows)]
+    {
+        // `taskkill /T` walks and terminates the whole process tree.
+        let _ = std::process::Command::new("taskkill")
+            .args(["/PID", &pid.to_string(), "/T", "/F"])
+            .status();
+    }
+
+    #[cfg(unix)]
+    {
+        let mut pids = vec![pid];
+        let mut stack = vec![pid];
+
+        while let Some(parent) = stack.pop() {
+            for child in child_pids(parent) {
+                stack.push(child);
+                pids.push(child);
+            }
+        }
+
+        for pid in pids.iter().rev() {
+            unsafe {
+                libc::kill(*pid as libc::pid_t, libc::SIGKILL);
+            }
+        }
+    }
+}
+
+/// Returns the direct children of `parent`.
+#[cfg(target_os = "linux")]
+fn child_pids(parent: u32) -> Vec<u32> {
+    let mut children = Vec::new();
+
+    let Ok(tasks) = std::fs::read_dir(format!("/proc/{parent}/task")) else {
+        return children;
+    };
+
+    for task in tasks.flatten() {
+        if let Ok(contents) = std::fs::read_to_string(task.path().join("children")) {
+            children.extend(
+                contents
+                    .split_whitespace()
+                    .filter_map(|pid| pid.parse::<u32>().ok()),
+            );
+        }
+    }
+
+    children
+}
+
+/// Returns the direct children of `parent`.
+#[cfg(all(unix, not(target_os = "linux")))]
+fn child_pids(parent: u32) -> Vec<u32> {
+    std::process::Command::new("pgrep")
+        .args(["-P", &parent.to_string()])
+        .output()
+        .map(|output| {
+            String::from_utf8_lossy(&output.stdout)
+                .split_whitespace()
+                .filter_map(|pid| pid.parse::<u32>().ok())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -196,6 +303,69 @@ mod tests {
             std::process::id(),
             generate_secret_key(8)
         ))
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn webserver_sidecar_is_terminated_when_the_app_shuts_down() {
+        use std::process::Command;
+
+        // Stand-in for the burrito-wrapped webserver sidecar: a wrapper that
+        // spawns a long-lived child process (beam.smp in the real release)
+        // and waits on it.
+        let mut stand_in = Command::new("sh")
+            .arg("-c")
+            .arg("sleep 300 & wait")
+            .spawn()
+            .unwrap();
+        let wrapper_pid = stand_in.id();
+
+        // Wait (bounded) until the wrapper has spawned its child.
+        let mut child_pid = None;
+        for _ in 0..100 {
+            if let Some(pid) = child_pids(wrapper_pid).first().copied() {
+                child_pid = Some(pid);
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        let child_pid = child_pid.expect("webserver stand-in never spawned its child process");
+
+        // Same shutdown path the app runs on RunEvent::Exit.
+        terminate_process_tree(wrapper_pid);
+
+        // Reap the wrapper so it does not linger as a zombie.
+        stand_in.wait().unwrap();
+
+        // Killing is asynchronous; wait (bounded) for both processes to die.
+        let deadline = std::time::Instant::now() + Duration::from_secs(5);
+        while (process_alive(wrapper_pid) || process_alive(child_pid))
+            && std::time::Instant::now() < deadline
+        {
+            std::thread::sleep(Duration::from_millis(50));
+        }
+
+        let wrapper_alive = process_alive(wrapper_pid);
+        let child_alive = process_alive(child_pid);
+
+        // Cleanup so a failing assertion doesn't leak processes.
+        for pid in [wrapper_pid, child_pid] {
+            let _ = Command::new("kill").arg("-9").arg(pid.to_string()).status();
+        }
+
+        assert!(
+            !wrapper_alive,
+            "webserver sidecar (pid {wrapper_pid}) survived app shutdown"
+        );
+        assert!(
+            !child_alive,
+            "webserver child process, i.e. beam (pid {child_pid}) survived app shutdown"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    fn process_alive(pid: u32) -> bool {
+        std::path::Path::new(&format!("/proc/{pid}")).exists()
     }
 
     #[test]
