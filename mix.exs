@@ -4,7 +4,7 @@ defmodule Melocoton.MixProject do
   def project do
     [
       app: :melocoton,
-      version: "0.32.0",
+      version: "0.33.0",
       elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
