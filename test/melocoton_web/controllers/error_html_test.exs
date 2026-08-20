@@ -10,7 +10,12 @@ defmodule MelocotonWeb.ErrorHTMLTest do
 
   test "renders a helpful 500 page with sanitized diagnostics" do
     reason = RuntimeError.exception("database password: super-secret")
-    assigns = [kind: :error, reason: reason, stack: []]
+
+    stack = [
+      {__MODULE__, :failing_function, 0, [file: ~c"test/error_html_test.exs", line: 42]}
+    ]
+
+    assigns = [kind: :error, reason: reason, stack: stack]
     html = render_to_string(MelocotonWeb.ErrorHTML, "500", "html", assigns)
 
     assert String.starts_with?(html, "<!DOCTYPE html>")
@@ -22,6 +27,8 @@ defmodule MelocotonWeb.ErrorHTMLTest do
     assert html =~ "mailto:support@ruaylabs.com"
     assert html =~ "Reference:"
     assert html =~ "Error type: RuntimeError"
+    assert html =~ "Stack trace:"
+    assert html =~ "test/error_html_test.exs:42"
     assert html =~ ~s(href="/")
     assert html =~ "Go to home"
     refute html =~ "super-secret"

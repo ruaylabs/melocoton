@@ -23,7 +23,9 @@ defmodule MelocotonWeb.ErrorHTML do
     System: #{system_info()}
     Error type: #{error_type(reason)}
 
-    This report excludes error messages, stack traces, database queries, and credentials.
+    Stack trace:
+    #{Exception.format_stacktrace(stack)}
+    This report excludes error messages, database queries, and credentials.
     """
 
     Logger.error("Error reference #{reference}\n" <> Exception.format(kind, reason, stack))
