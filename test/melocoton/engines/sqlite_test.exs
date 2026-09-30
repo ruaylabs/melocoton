@@ -5,6 +5,7 @@ defmodule Melocoton.Engines.SqliteTest do
   alias Melocoton.DatabaseClient
   alias Melocoton.Engines.Sqlite
   alias Melocoton.Engines.{TableMeta, TableStructure}
+  alias Melocoton.Test.DBPool
 
   setup do
     db_path =
@@ -67,7 +68,7 @@ defmodule Melocoton.Engines.SqliteTest do
     conn = %Connection{pid: pid, type: :sqlite}
 
     on_exit(fn ->
-      if Process.alive?(pid), do: GenServer.stop(pid)
+      DBPool.stop(pid)
       File.rm(db_path)
     end)
 

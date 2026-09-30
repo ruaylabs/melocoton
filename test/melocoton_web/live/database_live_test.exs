@@ -94,6 +94,98 @@ defmodule MelocotonWeb.DatabaseLiveTest do
 
       refute has_element?(index_live, "#databases-#{database.id}")
     end
+
+    test "saves a new group", %{conn: conn} do
+      {:ok, index_live, _html} = live(conn, ~p"/databases")
+
+      index_live |> element("#new-group-btn") |> render_click()
+      assert_patch(index_live, ~p"/groups/new")
+
+      assert index_live
+             |> form("#group-form", group: %{name: nil, color: nil})
+             |> render_change() =~ "can&#39;t be blank"
+
+      assert index_live
+             |> form("#group-form", group: %{name: "Production", color: "#ff0000"})
+             |> render_submit()
+
+      assert_patch(index_live, ~p"/databases")
+      assert render(index_live) =~ "Production"
+    end
+
+    test "updates a group", %{conn: conn} do
+      group = Melocoton.DatabasesFixtures.group_fixture(%{name: "Development"})
+      {:ok, index_live, _html} = live(conn, ~p"/databases")
+
+      index_live
+      |> element("aside a[href='/groups/#{group.id}/edit']")
+      |> render_click()
+
+      assert_patch(index_live, ~p"/groups/#{group.id}/edit")
+
+      assert index_live
+             |> form("#group-form", group: %{name: nil, color: nil})
+             |> render_change() =~ "can&#39;t be blank"
+
+      assert index_live
+             |> form("#group-form", group: %{name: "Updated", color: "#00ff00"})
+             |> render_submit()
+
+      assert_patch(index_live, ~p"/databases")
+      assert render(index_live) =~ "Updated"
+    end
+
+    test "updates appearance and editor settings", %{conn: conn} do
+      {:ok, index_live, _html} = live(conn, ~p"/databases")
+
+      index_live
+      |> element("button[phx-click='set-font-size'][phx-value-size='lg']")
+      |> render_click()
+
+      index_live
+      |> element("input[name='font_size_px']")
+      |> render_change(%{"font_size_px" => "20"})
+
+      index_live
+      |> element("button[phx-click='set-editor-mode'][phx-value-mode='standard']")
+      |> render_click()
+
+      index_live
+      |> element("#editor-theme-light-select")
+      |> render_change(%{"light_theme" => "githubLight"})
+
+      index_live
+      |> element("#editor-theme-dark-select")
+      |> render_change(%{"dark_theme" => "githubDark"})
+
+      index_live
+      |> element("select[name='provider']")
+      |> render_change(%{"provider" => "openai"})
+
+      index_live
+      |> element("select[name='model']")
+      |> render_change(%{"model" => "gpt-4o-mini"})
+
+      index_live
+      |> element("input[name='font_size_px']")
+      |> render_change(%{"font_size_px" => "invalid"})
+
+      index_live
+      |> element("select[name='provider']")
+      |> render_change(%{"provider" => "ollama"})
+
+      index_live |> element("button", "Test connection") |> render_click()
+
+      index_live
+      |> element("button", "Show welcome tutorial")
+      |> render_click()
+
+      index_live
+      |> form("form[phx-submit='save-settings']")
+      |> render_submit(%{"font_size" => "md", "provider" => "ollama", "model" => ""})
+
+      assert render(index_live) =~ "Settings saved"
+    end
   end
 
   describe "Connection string parsing" do

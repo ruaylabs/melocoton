@@ -5,6 +5,7 @@ defmodule Melocoton.Engines.PostgresTest do
   alias Melocoton.DatabaseClient
   alias Melocoton.Engines.Postgres
   alias Melocoton.Engines.{TableMeta, TableStructure}
+  alias Melocoton.Test.DBPool
 
   @moduletag :container
 
@@ -31,7 +32,7 @@ defmodule Melocoton.Engines.PostgresTest do
       "postgres://#{conn_params[:username]}:#{conn_params[:password]}@#{conn_params[:hostname]}:#{conn_params[:port]}/#{conn_params[:database]}"
 
     on_exit(fn ->
-      GenServer.stop(conn.pid)
+      DBPool.stop(conn.pid)
       Testcontainers.stop_container(container.container_id)
     end)
 

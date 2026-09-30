@@ -3,6 +3,7 @@ defmodule Melocoton.Engines.PostgresTransactionTest do
 
   alias Melocoton.{Connection, TransactionSession}
   alias Melocoton.ContainerHelper
+  alias Melocoton.Test.DBPool
 
   @moduletag :container
 
@@ -14,7 +15,7 @@ defmodule Melocoton.Engines.PostgresTransactionTest do
     {container, conn} = ContainerHelper.start_postgres(@seed_sql)
 
     on_exit(fn ->
-      GenServer.stop(conn.pid)
+      DBPool.stop(conn.pid)
       Testcontainers.stop_container(container.container_id)
     end)
 

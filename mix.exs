@@ -88,7 +88,10 @@ defmodule Melocoton.MixProject do
       {:makeup_sql, "~> 0.1"},
       {:html_sanitize_ex, "~> 1.4"},
       {:myxql, "~> 0.8"},
-      {:testcontainers, "~> 2.0", only: [:dev, :test]}
+      {:testcontainers, "~> 2.0", only: [:dev, :test]},
+      # Security fix (GHSA-52mm-h59v-f3c7 & friends): earmark is abandoned and retired;
+      # hackney 1.x has unpatched SSRF/CRLF advisories. Pin 4.x (first patched 4.0.1).
+      {:hackney, "~> 4.8", override: true}
     ]
   end
 

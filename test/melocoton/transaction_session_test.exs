@@ -2,6 +2,7 @@ defmodule Melocoton.TransactionSessionTest do
   use ExUnit.Case, async: false
 
   alias Melocoton.{Connection, TransactionSession}
+  alias Melocoton.Test.DBPool
 
   setup do
     db_path =
@@ -19,7 +20,7 @@ defmodule Melocoton.TransactionSessionTest do
     conn = %Connection{pid: pid, type: :sqlite}
 
     on_exit(fn ->
-      if Process.alive?(pid), do: GenServer.stop(pid, :normal, 5_000)
+      DBPool.stop(pid)
       File.rm(db_path)
     end)
 

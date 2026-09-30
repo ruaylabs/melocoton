@@ -3,6 +3,7 @@ defmodule Melocoton.Engines.MysqlTransactionTest do
 
   alias Melocoton.{Connection, TransactionSession}
   alias Melocoton.ContainerHelper
+  alias Melocoton.Test.DBPool
 
   @moduletag :container
 
@@ -14,7 +15,7 @@ defmodule Melocoton.Engines.MysqlTransactionTest do
     {container, conn} = ContainerHelper.start_mysql(@seed_sql)
 
     on_exit(fn ->
-      GenServer.stop(conn.pid)
+      DBPool.stop(conn.pid)
       Testcontainers.stop_container(container.container_id)
     end)
 
