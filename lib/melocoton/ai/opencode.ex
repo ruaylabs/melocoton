@@ -35,7 +35,8 @@ defmodule Melocoton.AI.OpenCode do
 
       case ReqLLM.generate_text(model_spec, messages,
              api_key: api_key,
-             receive_timeout: 300_000
+             receive_timeout: 300_000,
+             req_http_options: [headers: request_headers(opts)]
            ) do
         {:ok, %{message: %{content: content}}} ->
           {:ok, extract_text(content)}
@@ -44,6 +45,16 @@ defmodule Melocoton.AI.OpenCode do
           {:error, "OpenCode error: #{inspect(error)}"}
       end
     end
+  end
+
+  defp request_headers(opts) do
+    vsn = to_string(Application.spec(:melocoton, :vsn))
+    session_id = opts[:session_id] || "melocoton-#{vsn}"
+
+    [
+      {"x-opencode-session", session_id},
+      {"user-agent", "melocoton/#{vsn}"}
+    ]
   end
 
   defp resolve_endpoint(model) do

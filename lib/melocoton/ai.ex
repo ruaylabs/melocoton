@@ -17,11 +17,11 @@ defmodule Melocoton.AI do
     if is_nil(model_str) or model_str == "" do
       {:error, "No AI model configured. Go to Settings to set a model and API key."}
     else
-      do_chat(schema, messages, model_str)
+      do_chat(schema, messages, model_str, opts)
     end
   end
 
-  defp do_chat(schema, messages, model_str) do
+  defp do_chat(schema, messages, model_str, opts) do
     system_prompt = build_system_prompt(schema)
 
     llm_messages =
@@ -47,7 +47,10 @@ defmodule Melocoton.AI do
         end
 
       {:opencode, model_name} ->
-        Melocoton.AI.OpenCode.chat(llm_messages, model: model_name)
+        Melocoton.AI.OpenCode.chat(llm_messages,
+          model: model_name,
+          session_id: opts[:session_id]
+        )
 
       _ ->
         case ReqLLM.generate_text(model_str, llm_messages) do

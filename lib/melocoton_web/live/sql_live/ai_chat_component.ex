@@ -241,7 +241,7 @@ defmodule MelocotonWeb.SqlLive.AiChatComponent do
     messages = messages ++ [user_msg]
 
     Task.start(fn ->
-      case AI.chat(schema, messages) do
+      case AI.chat(schema, messages, session_id: chat.id) do
         {:ok, text} ->
           {:ok, assistant_msg} =
             Databases.create_chat_message(%{
