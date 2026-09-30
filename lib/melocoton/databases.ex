@@ -346,6 +346,61 @@ defmodule Melocoton.Databases do
     Repo.get!(ChatMessage, message_id) |> Repo.delete()
   end
 
+  @doc """
+  Summarizes saved assistant messages by group, database, provider, and requested model.
+  Filters: `:group_id`, `:database_id`, `:provider`, `:model`, `:from`, and `:to`.
+  Dates are inclusive UTC dates. Costs are USD estimates captured at response time.
+  Messages without total cost data are excluded; zero-cost messages are included.
+  Deleted messages/chats are excluded; groups reflect the database's current group.
+  """
+  def ai_usage_report(filters \\ []) do
+    query =
+      from m in ChatMessage,
+        join: d in assoc(m, :database),
+        left_join: g in assoc(d, :group),
+        where: m.role == "assistant" and not is_nil(m.total_cost),
+        group_by: [g.id, g.name, d.id, d.name, m.provider, m.model],
+        order_by: [g.name, d.name, m.provider, m.model],
+        select: %{
+          group_id: g.id,
+          group: g.name,
+          database_id: d.id,
+          database: d.name,
+          provider: m.provider,
+          model: m.model,
+          messages: count(m.id),
+          input_tokens: sum(m.input_tokens),
+          output_tokens: sum(m.output_tokens),
+          total_tokens: sum(m.total_tokens),
+          input_cost: sum(m.input_cost),
+          output_cost: sum(m.output_cost),
+          total_cost: sum(m.total_cost),
+          unknown_tokens: count(m.id) - count(m.total_tokens)
+        }
+
+    filters
+    |> Enum.reduce(query, &filter_ai_usage/2)
+    |> Repo.all()
+  end
+
+  defp filter_ai_usage({_key, value}, query) when value in [nil, ""], do: query
+
+  defp filter_ai_usage({:group_id, id}, query), do: where(query, [_m, d], d.group_id == ^id)
+  defp filter_ai_usage({:database_id, id}, query), do: where(query, [m], m.database_id == ^id)
+
+  defp filter_ai_usage({key, value}, query) when key in [:provider, :model],
+    do: where(query, [m], field(m, ^key) == ^value)
+
+  defp filter_ai_usage({:from, %Date{} = date}, query) do
+    start = DateTime.new!(date, ~T[00:00:00], "Etc/UTC")
+    where(query, [m], m.inserted_at >= ^start)
+  end
+
+  defp filter_ai_usage({:to, %Date{} = date}, query) do
+    finish = DateTime.new!(Date.add(date, 1), ~T[00:00:00], "Etc/UTC")
+    where(query, [m], m.inserted_at < ^finish)
+  end
+
   @max_history_entries 500
 
   def record_query(attrs) do

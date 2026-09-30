@@ -12,8 +12,6 @@ defmodule Melocoton.AI.MinimaxProvider do
       MINIMAX_API_KEY=sk-cp-...
   """
 
-  @base_url "https://api.minimax.io/v1"
-
   def chat(messages, opts \\ []) do
     api_key =
       opts[:api_key] ||
@@ -22,37 +20,19 @@ defmodule Melocoton.AI.MinimaxProvider do
 
     model = opts[:model] || "MiniMax-M2.7"
 
-    if api_key do
-      body = %{
-        model: model,
-        messages: messages,
-        max_tokens: opts[:max_tokens] || 4096
-      }
-
-      request =
-        Req.new(
-          url: "#{@base_url}/chat/completions",
-          json: body,
-          headers: [
-            {"authorization", "Bearer #{api_key}"},
-            {"content-type", "application/json"}
-          ],
-          connect_options: [timeout: :timer.seconds(60)],
-          receive_timeout: :timer.seconds(300)
-        )
-
-      case Req.post(request) do
-        {:ok, %{status: 200, body: %{"choices" => [%{"message" => %{"content" => content}} | _]}}} ->
-          {:ok, content}
-
-        {:ok, %{status: status, body: body}} ->
-          {:error, "Minimax API error (#{status}): #{inspect(body)}"}
-
-        {:error, error} ->
-          {:error, "Minimax request failed: #{inspect(error)}"}
-      end
-    else
+    if api_key in [nil, ""] do
       {:error, "MINIMAX_API_KEY not configured"}
+    else
+      request_opts =
+        [
+          max_tokens: 4096,
+          receive_timeout: :timer.seconds(300),
+          req_http_options: [connect_options: [timeout: :timer.seconds(60)]]
+        ]
+        |> Keyword.merge(Keyword.delete(opts, :model))
+        |> Keyword.put(:api_key, api_key)
+
+      ReqLLM.generate_text("minimax:#{model}", messages, request_opts)
     end
   end
 end

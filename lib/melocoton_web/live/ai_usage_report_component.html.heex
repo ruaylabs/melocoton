@@ -1,0 +1,111 @@
+<div id={@id}>
+  <div
+    :if={@loaded}
+    class="max-h-[80vh] overflow-auto p-4 space-y-4"
+    style="color: var(--text-primary);"
+  >
+    <p class="text-xs" style="color: var(--text-secondary);">
+      USD estimates from ReqLLM, not provider invoices. Includes active and archived saved chats.
+      Deleted chats/messages are excluded. Groups reflect current connections. Dates use UTC.
+      Responses without cost data are excluded. Ollama API charges are zero.
+    </p>
+
+    <.form
+      for={@form}
+      id="ai-usage-filters"
+      phx-submit="filter"
+      phx-target={@myself}
+      class="flex flex-wrap gap-4 items-end"
+    >
+      <.input
+        field={@form[:group_id]}
+        type="select"
+        label="Group"
+        prompt="All groups"
+        options={@groups}
+      />
+      <.input
+        field={@form[:database_id]}
+        type="select"
+        label="Database"
+        prompt="All databases"
+        options={@databases}
+      />
+      <.input
+        field={@form[:provider]}
+        type="select"
+        label="Provider"
+        prompt="All providers"
+        options={@providers}
+      />
+      <.input
+        field={@form[:model]}
+        type="select"
+        label="Model"
+        prompt="All models"
+        options={@models}
+      />
+      <.input field={@form[:from]} type="date" label="From (inclusive)" />
+      <.input field={@form[:to]} type="date" label="To (inclusive)" />
+      <button type="submit" class="btn-ghost rounded px-3 py-2 text-xs">Apply / Refresh</button>
+    </.form>
+    <p :if={@error} role="alert" class="text-xs text-red-500">{@error}</p>
+
+    <div id="ai-usage-totals" class="flex flex-wrap gap-6 text-sm">
+      <span>Responses: {@totals.messages || 0}</span>
+      <span>Input tokens: {@totals.input_tokens || 0}</span>
+      <span>Output tokens: {@totals.output_tokens || 0}</span>
+      <span>Total tokens: {@totals.total_tokens || 0}</span>
+      <span>Known cost: {format_cost(@totals.total_cost)}</span>
+    </div>
+    <p class="text-xs" style="color: var(--text-secondary);">
+      Responses with unknown token counts: {@totals.unknown_tokens || 0}.
+      Totals sum known values only; input tokens include schema and conversation context.
+    </p>
+
+    <p :if={@rows == []} id="ai-usage-empty" class="text-sm">No AI responses in this range.</p>
+    <div :if={@rows != []} class="overflow-x-auto">
+      <table id="ai-usage-table" class="w-full text-xs text-left whitespace-nowrap">
+        <thead style="background: var(--bg-secondary);">
+          <tr>
+            <th
+              :for={
+                label <- [
+                  "Group",
+                  "Database",
+                  "Provider",
+                  "Model",
+                  "Responses",
+                  "Input tokens",
+                  "Output tokens",
+                  "Total tokens",
+                  "Input USD",
+                  "Output USD",
+                  "Total USD"
+                ]
+              }
+              class="p-2"
+            >
+              {label}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr :for={row <- @rows} style="border-bottom: 1px solid var(--border-medium);">
+            <td class="p-2">{row.group || "Ungrouped"}</td>
+            <td class="p-2">{row.database}</td>
+            <td class="p-2">{row.provider || "Unknown"}</td>
+            <td class="p-2">{row.model || "Unknown"}</td>
+            <td class="p-2">{row.messages}</td>
+            <td class="p-2">{row.input_tokens || "Unknown"}</td>
+            <td class="p-2">{row.output_tokens || "Unknown"}</td>
+            <td class="p-2">{row.total_tokens || "Unknown"}</td>
+            <td class="p-2">{format_cost(row.input_cost)}</td>
+            <td class="p-2">{format_cost(row.output_cost)}</td>
+            <td class="p-2">{format_cost(row.total_cost)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

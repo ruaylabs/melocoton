@@ -13,6 +13,14 @@
     </div>
     <div class="flex items-center gap-1">
       <button
+        phx-click="open-ai-usage-report"
+        class="icon-btn"
+        title="AI usage report"
+        aria-label="AI usage report"
+      >
+        <.icon name="lucide-bar-chart-3" class="size-3.5" />
+      </button>
+      <button
         phx-click="toggle-history"
         phx-target={@myself}
         class="icon-btn"
@@ -250,6 +258,12 @@
                     <div class="ai-markdown">{html}</div>
                 <% end %>
               </span>
+              <p :if={msg.provider} class="mt-2 text-[9px]" style="color: var(--text-tertiary);">
+                {msg.provider}:{msg.model} · {msg.input_tokens || "?"} input / {msg.output_tokens ||
+                  "?"} output tokens · {if msg.total_cost,
+                  do: "$" <> Decimal.to_string(Decimal.round(msg.total_cost, 6), :normal),
+                  else: "Cost unknown"}
+              </p>
             </div>
             <%= if not @viewing_archived and @confirm_delete_message_id == msg.id do %>
               <div class="flex items-center gap-1 shrink-0 self-center">

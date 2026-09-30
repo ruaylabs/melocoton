@@ -1,6 +1,15 @@
 <.flash_group flash={@flash} />
 {@inner_content}
 
+<.modal
+  id="ai-usage-modal"
+  title="AI Usage Report"
+  icon="lucide-bar-chart-3"
+  max_width="max-w-6xl"
+>
+  <.live_component module={MelocotonWeb.AiUsageReportComponent} id="ai-usage-report" />
+</.modal>
+
 <div id="command-palette-wrapper">
   <button id="command-palette-trigger" phx-click="open-command-palette" class="hidden"></button>
   <.live_component module={MelocotonWeb.CommandPalette} id="command-palette" />

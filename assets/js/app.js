@@ -767,6 +767,14 @@ window.addEventListener("phx:open-settings-modal", () => {
   }
 });
 
+// Open the AI usage report after its data has been refreshed
+window.addEventListener("phx:open-ai-usage-modal", () => {
+  const modal = document.getElementById("ai-usage-modal");
+  if (modal) {
+    liveSocket.execJS(modal, modal.getAttribute("data-show-modal"));
+  }
+});
+
 // Focus AI chat input when panel opens
 window.addEventListener("phx:focus-ai-chat", () => {
   requestAnimationFrame(() => {

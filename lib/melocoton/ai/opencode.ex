@@ -33,13 +33,19 @@ defmodule Melocoton.AI.OpenCode do
           api_key: api_key
         })
 
-      case ReqLLM.generate_text(model_spec, messages,
-             api_key: api_key,
-             receive_timeout: 300_000,
-             req_http_options: [headers: request_headers(opts)]
-           ) do
-        {:ok, %{message: %{content: content}}} ->
-          {:ok, extract_text(content)}
+      http_opts = opts[:req_http_options] || []
+      headers = Enum.to_list(http_opts[:headers] || []) ++ request_headers(opts)
+
+      request_opts =
+        opts
+        |> Keyword.drop([:model, :session_id])
+        |> Keyword.put(:api_key, api_key)
+        |> Keyword.put_new(:receive_timeout, 300_000)
+        |> Keyword.put(:req_http_options, Keyword.put(http_opts, :headers, headers))
+
+      case ReqLLM.generate_text(model_spec, messages, request_opts) do
+        {:ok, response} ->
+          {:ok, response}
 
         {:error, error} ->
           {:error, "OpenCode error: #{inspect(error)}"}
@@ -49,7 +55,7 @@ defmodule Melocoton.AI.OpenCode do
 
   defp request_headers(opts) do
     vsn = to_string(Application.spec(:melocoton, :vsn))
-    session_id = opts[:session_id] || "melocoton-#{vsn}"
+    session_id = to_string(opts[:session_id] || "melocoton-#{vsn}")
 
     [
       {"x-opencode-session", session_id},
@@ -64,16 +70,4 @@ defmodule Melocoton.AI.OpenCode do
       _ -> {@zen_base_url, model}
     end
   end
-
-  defp extract_text(content) when is_binary(content), do: content
-
-  defp extract_text(parts) when is_list(parts) do
-    Enum.map_join(parts, "", fn
-      %{text: text} -> text
-      %{content: text} when is_binary(text) -> text
-      other -> to_string(other)
-    end)
-  end
-
-  defp extract_text(other), do: to_string(other)
 end

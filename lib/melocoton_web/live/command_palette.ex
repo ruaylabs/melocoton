@@ -7,6 +7,12 @@ defmodule MelocotonWeb.CommandPalette do
     %{id: :home, name: "Home", icon: "lucide-home", action: "navigate-home"},
     %{id: :settings, name: "Settings", icon: "lucide-settings", action: "open-settings"},
     %{
+      id: :ai_usage,
+      name: "AI Usage Report",
+      icon: "lucide-bar-chart-3",
+      action: "show-ai-usage"
+    },
+    %{
       id: :shortcuts,
       name: "Keyboard Shortcuts",
       icon: "lucide-keyboard",

@@ -9,7 +9,8 @@ defmodule Melocoton.AI do
 
   `schema` is a map with `:type` (atom) and `:tables` (list).
 
-  Returns `{:ok, response_text}` or `{:error, reason}`.
+  Returns `{:ok, attrs}` with content, provider, model, token usage, and USD cost estimates,
+  or `{:error, reason}`. The model identifies the requested model (including provider tiers).
   """
   def chat(schema, messages, opts \\ []) do
     model_str = opts[:model] || get_in(Application.get_env(:melocoton, :ai, []), [:model])
@@ -17,7 +18,7 @@ defmodule Melocoton.AI do
     if is_nil(model_str) or model_str == "" do
       {:error, "No AI model configured. Go to Settings to set a model and API key."}
     else
-      do_chat(schema, messages, model_str, opts)
+      do_chat(schema, messages, model_str, Keyword.delete(opts, :model))
     end
   end
 
@@ -28,38 +29,33 @@ defmodule Melocoton.AI do
       [%{role: "system", content: system_prompt}] ++
         Enum.map(messages, fn m -> %{role: m.role, content: m.content} end)
 
-    case parse_provider(model_str) do
-      {:minimax, model_name} ->
-        Melocoton.AI.MinimaxProvider.chat(llm_messages, model: model_name)
+    request_opts = Keyword.delete(opts, :session_id)
 
-      {:ollama, model_name} ->
-        model = Melocoton.AI.Ollama.model(model_name)
+    result =
+      case parse_provider(model_str) do
+        {:minimax, model_name} ->
+          Melocoton.AI.MinimaxProvider.chat(
+            llm_messages,
+            Keyword.put(request_opts, :model, model_name)
+          )
 
-        case ReqLLM.generate_text(model, llm_messages,
-               api_key: "ollama",
-               receive_timeout: 300_000
-             ) do
-          {:ok, %{message: %{content: content}}} ->
-            {:ok, extract_text(content)}
+        {:ollama, model_name} ->
+          request_opts =
+            Keyword.merge([api_key: "ollama", receive_timeout: 300_000], request_opts)
 
-          {:error, error} ->
-            {:error, "LLM error: #{inspect(error)}"}
-        end
+          ReqLLM.generate_text(Melocoton.AI.Ollama.model(model_name), llm_messages, request_opts)
 
-      {:opencode, model_name} ->
-        Melocoton.AI.OpenCode.chat(llm_messages,
-          model: model_name,
-          session_id: opts[:session_id]
-        )
+        {:opencode, model_name} ->
+          Melocoton.AI.OpenCode.chat(llm_messages, Keyword.put(opts, :model, model_name))
 
-      _ ->
-        case ReqLLM.generate_text(model_str, llm_messages) do
-          {:ok, %{message: %{content: content}}} ->
-            {:ok, extract_text(content)}
+        _ ->
+          ReqLLM.generate_text(model_str, llm_messages, request_opts)
+      end
 
-          {:error, error} ->
-            {:error, "LLM error: #{inspect(error)}"}
-        end
+    case result do
+      {:ok, response} -> {:ok, response_attributes(response, model_str)}
+      {:error, reason} when is_binary(reason) -> {:error, reason}
+      {:error, error} -> {:error, "LLM error: #{inspect(error)}"}
     end
   end
 
@@ -68,18 +64,39 @@ defmodule Melocoton.AI do
   defp parse_provider("opencode:" <> model), do: {:opencode, model}
   defp parse_provider(_), do: :standard
 
-  # Content can be a plain string, a list of ContentPart structs, or other formats
-  defp extract_text(content) when is_binary(content), do: content
+  @doc false
+  def response_attributes(%ReqLLM.Response{} = response, model_str) do
+    [provider, model] = String.split(model_str, ":", parts: 2)
+    # Response usage is already normalized. Re-normalizing drops ReqLLM's cost metadata.
+    usage = response.usage || %{}
+    input_tokens = usage[:input_tokens] || usage[:input]
+    output_tokens = usage[:output_tokens] || usage[:output]
+    cost = usage[:cost] || %{}
 
-  defp extract_text(parts) when is_list(parts) do
-    Enum.map_join(parts, "", fn
-      %{text: text} -> text
-      %{content: text} when is_binary(text) -> text
-      other -> to_string(other)
-    end)
+    %{
+      content: ReqLLM.Response.text(response),
+      provider: provider,
+      model: model,
+      usage: usage,
+      input_tokens: input_tokens,
+      output_tokens: output_tokens,
+      total_tokens: usage[:total_tokens] || total_tokens(input_tokens, output_tokens),
+      input_cost: decimal_cost(usage[:input_cost] || cost[:input_cost], provider),
+      output_cost: decimal_cost(usage[:output_cost] || cost[:output_cost], provider),
+      total_cost: decimal_cost(usage[:total_cost] || cost[:total], provider)
+    }
   end
 
-  defp extract_text(other), do: to_string(other)
+  defp total_tokens(input, output) when is_integer(input) and is_integer(output),
+    do: input + output
+
+  defp total_tokens(_input, _output), do: nil
+
+  # Local inference has no provider API charge; hardware/electricity costs are not included.
+  defp decimal_cost(_cost, "ollama"), do: Decimal.new(0)
+  defp decimal_cost(nil, _provider), do: nil
+  defp decimal_cost(cost, _provider) when is_float(cost), do: Decimal.from_float(cost)
+  defp decimal_cost(cost, _provider), do: Decimal.new(cost)
 
   @doc """
   Builds a system prompt with the full database schema for LLM context.

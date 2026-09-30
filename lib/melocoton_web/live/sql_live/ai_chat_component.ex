@@ -242,14 +242,15 @@ defmodule MelocotonWeb.SqlLive.AiChatComponent do
 
     Task.start(fn ->
       case AI.chat(schema, messages, session_id: chat.id) do
-        {:ok, text} ->
+        {:ok, attrs} ->
           {:ok, assistant_msg} =
-            Databases.create_chat_message(%{
+            attrs
+            |> Map.merge(%{
               role: "assistant",
-              content: text,
               database_id: database_id,
               chat_id: chat.id
             })
+            |> Databases.create_chat_message()
 
           Phoenix.PubSub.broadcast(
             Melocoton.PubSub,

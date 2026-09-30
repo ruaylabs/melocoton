@@ -48,6 +48,11 @@ defmodule MelocotonWeb.CommandPaletteHook do
     {:halt, socket}
   end
 
+  defp handle_event("open-ai-usage-report", _params, socket) do
+    send_update(MelocotonWeb.AiUsageReportComponent, id: "ai-usage-report", action: :open)
+    {:halt, socket}
+  end
+
   # Panel toggle shortcuts — only active on pages that have these assigns
   defp handle_event("toggle-ai-panel", _params, socket) do
     if Map.has_key?(socket.assigns, :ai_panel_open) do
@@ -63,6 +68,11 @@ defmodule MelocotonWeb.CommandPaletteHook do
 
   defp handle_info({MelocotonWeb.CommandPalette, {:palette_action, "open-settings"}}, socket) do
     {:halt, push_event(socket, "open-settings-modal", %{})}
+  end
+
+  defp handle_info({MelocotonWeb.CommandPalette, {:palette_action, "show-ai-usage"}}, socket) do
+    send_update(MelocotonWeb.AiUsageReportComponent, id: "ai-usage-report", action: :open)
+    {:halt, socket}
   end
 
   defp handle_info({MelocotonWeb.CommandPalette, {:palette_action, "show-shortcuts"}}, socket) do
