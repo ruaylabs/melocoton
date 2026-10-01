@@ -2,8 +2,9 @@ defmodule Melocoton.AI.Models do
   @providers [
     {"anthropic", "Anthropic",
      [
-       {"claude-sonnet-4-6", "Claude Sonnet 4.6"},
-       {"claude-opus-4-6", "Claude Opus 4.6"},
+       {"claude-sonnet-5-5", "Claude Sonnet 5.5"},
+       {"claude-opus-5-5", "Claude Opus 5.5"},
+       {"claude-fable-5-1", "Claude Fable 5.1"},
        {"claude-haiku-4-5", "Claude Haiku 4.5"}
      ]},
     {"openai", "OpenAI",
@@ -16,8 +17,10 @@ defmodule Melocoton.AI.Models do
      ]},
     {"openrouter", "OpenRouter",
      [
-       {"anthropic/claude-sonnet-4-6", "Claude Sonnet 4.6"},
-       {"anthropic/claude-haiku-4-5", "Claude Haiku 4.5"},
+       {"anthropic/claude-sonnet-5.5", "Claude Sonnet 5.5"},
+       {"anthropic/claude-opus-5.5", "Claude Opus 5.5"},
+       {"anthropic/claude-fable-5.1", "Claude Fable 5.1"},
+       {"anthropic/claude-haiku-4.5", "Claude Haiku 4.5"},
        {"openai/gpt-4o", "GPT-4o"},
        {"google/gemini-2.5-pro", "Gemini 2.5 Pro"},
        {"minimax/MiniMax-M2.7", "MiniMax M2.7"}
@@ -82,8 +85,9 @@ defmodule Melocoton.AI.Models do
        {"zen/gpt-5.5", "Zen: GPT 5.5"},
        {"zen/gpt-5.2-codex", "Zen: GPT 5.2 Codex"},
        {"zen/gpt-5.1-codex", "Zen: GPT 5.1 Codex"},
-       {"zen/claude-sonnet-4-6", "Zen: Claude Sonnet 4.6"},
-       {"zen/claude-opus-4-5", "Zen: Claude Opus 4.5"},
+       {"zen/claude-sonnet-5-5", "Zen: Claude Sonnet 5.5"},
+       {"zen/claude-opus-5-5", "Zen: Claude Opus 5.5"},
+       {"zen/claude-fable-5-1", "Zen: Claude Fable 5.1"},
        {"zen/claude-haiku-4-5", "Zen: Claude Haiku 4.5"},
        {"zen/gemini-3.5-flash", "Zen: Gemini 3.5 Flash"}
      ]}

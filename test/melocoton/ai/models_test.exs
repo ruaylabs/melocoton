@@ -14,10 +14,39 @@ defmodule Melocoton.AI.ModelsTest do
   end
 
   describe "model_options/1" do
-    test "returns models for a valid provider" do
-      options = Models.model_options("anthropic")
-      assert {"Claude Sonnet 4.6", "claude-sonnet-4-6"} in options
-      assert {"Claude Opus 4.6", "claude-opus-4-6"} in options
+    test "returns current Anthropic models as {label, id} tuples" do
+      assert Models.model_options("anthropic") == [
+               {"Claude Sonnet 5.5", "claude-sonnet-5-5"},
+               {"Claude Opus 5.5", "claude-opus-5-5"},
+               {"Claude Fable 5.1", "claude-fable-5-1"},
+               {"Claude Haiku 4.5", "claude-haiku-4-5"}
+             ]
+    end
+
+    test "returns current Claude models with OpenRouter IDs" do
+      options =
+        Models.model_options("openrouter")
+        |> Enum.filter(fn {_, id} -> String.starts_with?(id, "anthropic/") end)
+
+      assert options == [
+               {"Claude Sonnet 5.5", "anthropic/claude-sonnet-5.5"},
+               {"Claude Opus 5.5", "anthropic/claude-opus-5.5"},
+               {"Claude Fable 5.1", "anthropic/claude-fable-5.1"},
+               {"Claude Haiku 4.5", "anthropic/claude-haiku-4.5"}
+             ]
+    end
+
+    test "returns current Claude models with OpenCode Zen IDs" do
+      options =
+        Models.model_options("opencode")
+        |> Enum.filter(fn {_, id} -> String.starts_with?(id, "zen/claude-") end)
+
+      assert options == [
+               {"Zen: Claude Sonnet 5.5", "zen/claude-sonnet-5-5"},
+               {"Zen: Claude Opus 5.5", "zen/claude-opus-5-5"},
+               {"Zen: Claude Fable 5.1", "zen/claude-fable-5-1"},
+               {"Zen: Claude Haiku 4.5", "zen/claude-haiku-4-5"}
+             ]
     end
 
     test "returns empty list for unknown provider" do
