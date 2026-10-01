@@ -23,6 +23,14 @@ defmodule Melocoton.AI.ModelsTest do
              ]
     end
 
+    test "returns current OpenAI models as {label, id} tuples" do
+      assert Models.model_options("openai") == [
+               {"GPT-6 Astra", "gpt-6-astra"},
+               {"GPT-6.1 Sol", "gpt-6.1-sol"},
+               {"GPT-6 Luna", "gpt-6-luna"}
+             ]
+    end
+
     test "returns current Claude models with OpenRouter IDs" do
       options =
         Models.model_options("openrouter")
@@ -46,6 +54,42 @@ defmodule Melocoton.AI.ModelsTest do
                {"Zen: Claude Opus 5.5", "zen/claude-opus-5-5"},
                {"Zen: Claude Fable 5.1", "zen/claude-fable-5-1"},
                {"Zen: Claude Haiku 4.5", "zen/claude-haiku-4-5"}
+             ]
+    end
+
+    test "returns current OpenAI models with OpenRouter IDs" do
+      options =
+        Models.model_options("openrouter")
+        |> Enum.filter(fn {_, id} -> String.starts_with?(id, "openai/") end)
+
+      assert options == [
+               {"GPT-6 Astra", "openai/gpt-6-astra"},
+               {"GPT-6.1 Sol", "openai/gpt-6.1-sol"},
+               {"GPT-6 Luna", "openai/gpt-6-luna"}
+             ]
+    end
+
+    test "returns current OpenAI models with OpenCode Zen IDs" do
+      options =
+        Models.model_options("opencode")
+        |> Enum.filter(fn {_, id} -> String.starts_with?(id, "zen/gpt-") end)
+
+      assert options == [
+               {"Zen: GPT-6 Astra", "zen/gpt-6-astra"},
+               {"Zen: GPT-6.1 Sol", "zen/gpt-6.1-sol"},
+               {"Zen: GPT-6 Luna", "zen/gpt-6-luna"},
+               {"Zen: GPT-5.3 Codex", "zen/gpt-5.3-codex"}
+             ]
+    end
+
+    test "retains the available OpenAI models with OpenCode Go IDs" do
+      options =
+        Models.model_options("opencode")
+        |> Enum.filter(fn {_, id} -> String.starts_with?(id, "go/gpt-") end)
+
+      assert options == [
+               {"Go: GPT 6 Luna", "go/gpt-6-luna"},
+               {"Go: GPT 5.6 Luna", "go/gpt-5.6-luna"}
              ]
     end
 

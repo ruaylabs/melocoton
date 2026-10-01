@@ -9,11 +9,9 @@ defmodule Melocoton.AI.Models do
      ]},
     {"openai", "OpenAI",
      [
-       {"gpt-4o", "GPT-4o"},
-       {"gpt-4o-mini", "GPT-4o Mini"},
-       {"gpt-4.1", "GPT-4.1"},
-       {"gpt-4.1-mini", "GPT-4.1 Mini"},
-       {"gpt-4.1-nano", "GPT-4.1 Nano"}
+       {"gpt-6-astra", "GPT-6 Astra"},
+       {"gpt-6.1-sol", "GPT-6.1 Sol"},
+       {"gpt-6-luna", "GPT-6 Luna"}
      ]},
     {"openrouter", "OpenRouter",
      [
@@ -21,7 +19,9 @@ defmodule Melocoton.AI.Models do
        {"anthropic/claude-opus-5.5", "Claude Opus 5.5"},
        {"anthropic/claude-fable-5.1", "Claude Fable 5.1"},
        {"anthropic/claude-haiku-4.5", "Claude Haiku 4.5"},
-       {"openai/gpt-4o", "GPT-4o"},
+       {"openai/gpt-6-astra", "GPT-6 Astra"},
+       {"openai/gpt-6.1-sol", "GPT-6.1 Sol"},
+       {"openai/gpt-6-luna", "GPT-6 Luna"},
        {"google/gemini-2.5-pro", "Gemini 2.5 Pro"},
        {"minimax/MiniMax-M2.7", "MiniMax M2.7"}
      ]},
@@ -82,9 +82,10 @@ defmodule Melocoton.AI.Models do
        {"go/hy3", "Go: Hy3"},
        {"go/hy3-preview", "Go: Hy3 Preview"},
        {"go/space-bunny-free", "Free: Space Bunny"},
-       {"zen/gpt-5.5", "Zen: GPT 5.5"},
-       {"zen/gpt-5.2-codex", "Zen: GPT 5.2 Codex"},
-       {"zen/gpt-5.1-codex", "Zen: GPT 5.1 Codex"},
+       {"zen/gpt-6-astra", "Zen: GPT-6 Astra"},
+       {"zen/gpt-6.1-sol", "Zen: GPT-6.1 Sol"},
+       {"zen/gpt-6-luna", "Zen: GPT-6 Luna"},
+       {"zen/gpt-5.3-codex", "Zen: GPT-5.3 Codex"},
        {"zen/claude-sonnet-5-5", "Zen: Claude Sonnet 5.5"},
        {"zen/claude-opus-5-5", "Zen: Claude Opus 5.5"},
        {"zen/claude-fable-5-1", "Zen: Claude Fable 5.1"},
