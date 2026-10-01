@@ -1,6 +1,6 @@
 [package]
 name = "melocoton"
-version = "0.33.1"
+version = "0.34.0"
 description = "A minimalist database client"
 authors = ["Erick Navarro"]
 edition = "2021"
