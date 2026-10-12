@@ -212,6 +212,50 @@ defmodule MelocotonWeb.DatabaseLiveTest do
       assert html =~ "myapp"
     end
 
+    for password <- ["sec@ret", "sec%40ret"] do
+      test "round-trips postgres password #{password} in connection string", %{conn: conn} do
+        {:ok, index_live, _html} = live(conn, ~p"/databases")
+        index_live |> element("a", "New Connection") |> render_click()
+
+        index_live
+        |> form("#database-form",
+          database: %{
+            type: "postgres",
+            name: "password with at sign",
+            group_id: hd(Melocoton.Databases.list_groups()).id
+          }
+        )
+        |> render_change()
+
+        index_live
+        |> element("input[name=connection_string]")
+        |> render_change(%{
+          connection_string: "postgres://admin:#{unquote(password)}@db.example.com:5433/myapp"
+        })
+
+        assert has_element?(index_live, "input[name='database[pg_password]'][value='sec@ret']")
+
+        index_live |> form("#database-form", database: %{}) |> render_submit()
+        assert_patch(index_live, ~p"/databases")
+
+        database =
+          Enum.find(Melocoton.Databases.list_databases(), &(&1.name == "password with at sign"))
+
+        assert database.url == "postgres://admin:sec%40ret@db.example.com:5433/myapp"
+        opts = Ecto.Repo.Supervisor.parse_url(database.url)
+        assert opts[:password] == "sec@ret"
+        assert opts[:hostname] == "db.example.com"
+        assert opts[:port] == 5433
+        assert opts[:database] == "myapp"
+
+        index_live
+        |> element("#databases-#{database.id} a[title='Edit']")
+        |> render_click()
+
+        assert has_element?(index_live, "input[name='database[pg_password]'][value='sec@ret']")
+      end
+    end
+
     test "preserves name when filling from connection string", %{conn: conn} do
       {:ok, index_live, _html} = live(conn, ~p"/databases")
       index_live |> element("a", "New Connection") |> render_click()

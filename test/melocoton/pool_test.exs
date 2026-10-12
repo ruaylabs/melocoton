@@ -3,6 +3,42 @@ defmodule Melocoton.PoolTest do
 
   alias Melocoton.Connection
 
+  describe "postgres connections" do
+    @tag :container
+    test "connects with raw and encoded at signs in the password" do
+      password = "sec@ret"
+
+      config =
+        Testcontainers.PostgresContainer.new()
+        |> Testcontainers.PostgresContainer.with_password(password)
+
+      {:ok, container} = Testcontainers.start_container(config)
+      params = Testcontainers.PostgresContainer.connection_parameters(container)
+      ids = for _ <- 1..2, do: -System.unique_integer([:positive])
+
+      on_exit(fn ->
+        Enum.each(ids, &Melocoton.Pool.release/1)
+        Testcontainers.stop_container(container.container_id)
+      end)
+
+      encoded_password = URI.encode(password, &URI.char_unreserved?/1)
+
+      for {url_password, id} <- Enum.zip([password, encoded_password], ids) do
+        database = %{
+          id: id,
+          type: :postgres,
+          url:
+            "postgres://#{params[:username]}:#{url_password}@#{params[:hostname]}:#{params[:port]}/#{params[:database]}"
+        }
+
+        assert %Connection{pid: pid, type: :postgres} = Melocoton.Pool.get_repo(database)
+        assert Process.alive?(pid)
+        assert {:ok, %Postgrex.Result{rows: [[1]]}} = Postgrex.query(pid, "SELECT 1", [])
+        assert Process.alive?(Process.whereis(Melocoton.Pool))
+      end
+    end
+  end
+
   describe "health check" do
     test "evicts dead connections from pool state" do
       # Spawn a process and immediately kill it to simulate a dead connection

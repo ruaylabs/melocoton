@@ -256,8 +256,11 @@ defmodule MelocotonWeb.DatabaseLive.FormComponent do
   end
 
   defp format_userinfo("", _), do: ""
-  defp format_userinfo(user, ""), do: "#{user}@"
-  defp format_userinfo(user, pass), do: "#{user}:#{pass}@"
+  defp format_userinfo(user, ""), do: "#{URI.encode(user, &URI.char_unreserved?/1)}@"
+
+  defp format_userinfo(user, pass) do
+    "#{URI.encode(user, &URI.char_unreserved?/1)}:#{URI.encode(pass, &URI.char_unreserved?/1)}@"
+  end
 
   defp parse_connection_url(url, db_type) when url in [nil, ""],
     do: default_connection_values(db_type)
@@ -285,8 +288,8 @@ defmodule MelocotonWeb.DatabaseLive.FormComponent do
 
   defp parse_userinfo(info) do
     case String.split(info, ":", parts: 2) do
-      [user, password] -> {user, password}
-      [user] -> {user, ""}
+      [user, password] -> {URI.decode(user), URI.decode(password)}
+      [user] -> {URI.decode(user), ""}
     end
   end
 

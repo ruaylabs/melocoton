@@ -111,8 +111,8 @@ defmodule Melocoton.Pool do
 
   defp parse_userinfo(userinfo) do
     case String.split(userinfo, ":", parts: 2) do
-      [user, pass] -> {user, pass}
-      [user] -> {user, ""}
+      [user, pass] -> {URI.decode(user), URI.decode(pass)}
+      [user] -> {URI.decode(user), ""}
     end
   end
 end
