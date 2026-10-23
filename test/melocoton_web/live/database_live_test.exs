@@ -135,6 +135,17 @@ defmodule MelocotonWeb.DatabaseLiveTest do
       assert render(index_live) =~ "Updated"
     end
 
+    test "settings footer stays sticky and opaque above scrolling content", %{conn: conn} do
+      {:ok, index_live, _html} = live(conn, ~p"/databases")
+
+      assert has_element?(
+               index_live,
+               "#settings-footer.sticky.bottom-0.z-10.-mx-4.-mb-4[style*='background: var(--bg-primary)']"
+             )
+
+      assert has_element?(index_live, "#settings-footer button[type='submit']", "Save")
+    end
+
     test "updates appearance and editor settings", %{conn: conn} do
       {:ok, index_live, _html} = live(conn, ~p"/databases")
 
