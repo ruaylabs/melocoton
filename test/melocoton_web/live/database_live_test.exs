@@ -17,6 +17,42 @@ defmodule MelocotonWeb.DatabaseLiveTest do
     %{database: database}
   end
 
+  test "toolbar actions have consistent sizing and spacing", %{conn: conn} do
+    {:ok, index_live, _html} = live(conn, ~p"/databases")
+
+    assert has_element?(index_live, "#connection-toolbar-actions.flex.gap-2")
+
+    for label <- ["New Connection", "New Group", "Import", "AI Usage"] do
+      assert has_element?(
+               index_live,
+               "#connection-toolbar-actions > .h-8.px-3.inline-flex.gap-1\\.5",
+               label
+             )
+    end
+  end
+
+  test "database type filters keep consistent sizing and expose selection", %{conn: conn} do
+    {:ok, index_live, _html} = live(conn, ~p"/databases")
+
+    for label <- ["PostgreSQL", "MySQL", "SQLite"] do
+      assert has_element?(
+               index_live,
+               "#database-type-filters button.h-8.px-3.border[aria-pressed='false']",
+               label
+             )
+    end
+
+    index_live
+    |> element("#database-type-filters button[phx-value-type='postgres']")
+    |> render_click()
+
+    assert has_element?(
+             index_live,
+             "#database-type-filters button.h-8.px-3.border[aria-pressed='true']",
+             "PostgreSQL"
+           )
+  end
+
   test "empty-state New Connection uses the defined accent background", %{conn: conn} do
     {:ok, index_live, _html} = live(conn, ~p"/databases")
 

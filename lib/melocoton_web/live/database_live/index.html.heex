@@ -104,36 +104,42 @@
     <main class="flex-1 flex flex-col overflow-hidden" style="background: var(--bg-primary);">
       <%!-- Toolbar --%>
       <div class="flex items-center app-toolbar">
-        <.link
-          class="px-2 py-1 text-xs bg-app-accent-light text-white rounded hover:bg-app-accent-light/90 flex items-center mr-2"
-          patch={~p"/databases/new"}
-        >
-          <.icon name="lucide-plus" class="size-4 mr-1.5" /> New Connection
-        </.link>
-        <.link
-          id="new-group-btn"
-          class="px-2 py-1 text-xs rounded flex items-center mr-2 btn-ghost"
-          patch={~p"/groups/new"}
-        >
-          <.icon name="lucide-folder-plus" class="size-4 mr-1.5" /> New Group
-        </.link>
-        <button class="px-2 py-1 text-xs rounded flex items-center btn-ghost">
-          <.icon name="lucide-file-input" class="size-4 mr-1.5" /> Import
-        </button>
-        <button
-          id="ai-usage-button"
-          phx-click="open-ai-usage-report"
-          class="px-2 py-1 text-xs rounded flex items-center btn-ghost"
-        >
-          <.icon name="lucide-bar-chart-3" class="size-4 mr-1.5" /> AI Usage
-        </button>
+        <div id="connection-toolbar-actions" class="flex flex-wrap items-center gap-2">
+          <.link
+            class="h-8 px-3 text-xs font-medium rounded inline-flex items-center justify-center gap-1.5 whitespace-nowrap bg-app-accent-light text-white hover:bg-app-accent-light/90"
+            patch={~p"/databases/new"}
+          >
+            <.icon name="lucide-plus" class="size-4 shrink-0" /> New Connection
+          </.link>
+          <.link
+            id="new-group-btn"
+            class="h-8 px-3 text-xs font-medium rounded inline-flex items-center justify-center gap-1.5 whitespace-nowrap btn-ghost"
+            patch={~p"/groups/new"}
+          >
+            <.icon name="lucide-folder-plus" class="size-4 shrink-0" /> New Group
+          </.link>
+          <button class="h-8 px-3 text-xs font-medium rounded inline-flex items-center justify-center gap-1.5 whitespace-nowrap btn-ghost">
+            <.icon name="lucide-file-input" class="size-4 shrink-0" /> Import
+          </button>
+          <button
+            id="ai-usage-button"
+            phx-click="open-ai-usage-report"
+            class="h-8 px-3 text-xs font-medium rounded inline-flex items-center justify-center gap-1.5 whitespace-nowrap btn-ghost"
+          >
+            <.icon name="lucide-bar-chart-3" class="size-4 shrink-0" /> AI Usage
+          </button>
+        </div>
 
-        <div class="flex items-center gap-1 ml-3">
+        <div
+          id="database-type-filters"
+          role="group"
+          aria-label="Filter connections by database type"
+          class="flex items-center gap-2 ml-3"
+        >
           <button
             :for={type <- ~w(postgres mysql sqlite)a}
             class={[
-              "px-2 py-0.5 text-[10px] rounded-full font-medium transition-colors",
-              @engine_filter == type && "text-white",
+              "h-8 px-3 inline-flex items-center justify-center text-xs rounded font-medium border border-transparent transition-colors",
               @engine_filter != type && "hover:bg-black/5 dark:hover:bg-white/5"
             ]}
             style={
@@ -149,13 +155,18 @@
                     "background: var(--badge-sqlite-bg); color: var(--badge-sqlite-text);"
                 end
               else
-                "color: var(--text-tertiary); border: 1px solid var(--border-medium);"
+                "color: var(--text-secondary); border-color: var(--border-medium);"
               end
             }
             phx-click="filter-engine"
             phx-value-type={type}
+            aria-pressed={to_string(@engine_filter == type)}
           >
-            {type}
+            {case type do
+              :postgres -> "PostgreSQL"
+              :mysql -> "MySQL"
+              :sqlite -> "SQLite"
+            end}
           </button>
         </div>
 
