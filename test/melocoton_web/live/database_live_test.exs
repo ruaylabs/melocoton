@@ -22,7 +22,9 @@ defmodule MelocotonWeb.DatabaseLiveTest do
 
     assert has_element?(index_live, "#connection-toolbar-actions.flex.gap-2")
 
-    for label <- ["New Connection", "New Group", "Import", "AI Usage"] do
+    refute has_element?(index_live, "#connection-toolbar-actions > button", "Import")
+
+    for label <- ["New Connection", "New Group", "AI Usage"] do
       assert has_element?(
                index_live,
                "#connection-toolbar-actions > .h-8.px-3.inline-flex.gap-1\\.5",

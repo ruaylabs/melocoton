@@ -619,14 +619,6 @@
                     </div>
                   </div>
                   <button
-                    id="clear-results-search"
-                    class="text-xs p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded"
-                    style="color: var(--text-tertiary);"
-                    title="Clear search"
-                  >
-                    <.icon name="lucide-x" class="size-3" />
-                  </button>
-                  <button
                     :if={explain_query?(@last_query)}
                     phx-click="explain-with-ai"
                     class="text-xs px-2 py-0.5 rounded flex items-center gap-1 hover:bg-black/5 dark:hover:bg-white/5"
