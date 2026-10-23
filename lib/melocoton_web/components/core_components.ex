@@ -20,6 +20,40 @@ defmodule MelocotonWeb.CoreComponents do
   import MelocotonWeb.Gettext
 
   @doc """
+  Chooses black or white text for an opaque hex background using WCAG relative luminance.
+  The higher-contrast choice meets the 4.5:1 normal-text threshold for any RGB color.
+  """
+  def contrast_foreground("#" <> hex) when byte_size(hex) in [3, 6] do
+    hex =
+      if byte_size(hex) == 3 do
+        for <<digit <- hex>>, into: "", do: <<digit, digit>>
+      else
+        hex
+      end
+
+    case Integer.parse(hex, 16) do
+      {rgb, ""} ->
+        <<red, green, blue>> = <<rgb::24>>
+
+        [red, green, blue] =
+          Enum.map([red, green, blue], fn channel ->
+            value = channel / 255
+            if value <= 0.04045, do: value / 12.92, else: :math.pow((value + 0.055) / 1.055, 2.4)
+          end)
+
+        luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+        black_contrast = (luminance + 0.05) / 0.05
+        white_contrast = 1.05 / (luminance + 0.05)
+        if black_contrast >= white_contrast, do: "#000000", else: "#ffffff"
+
+      _ ->
+        "#000000"
+    end
+  end
+
+  def contrast_foreground(_color), do: "#000000"
+
+  @doc """
   Renders a modal.
 
   ## Examples

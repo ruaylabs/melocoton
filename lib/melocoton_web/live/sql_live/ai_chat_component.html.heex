@@ -203,7 +203,7 @@
             <% end %>
             <div
               class="px-2.5 py-1.5 rounded-lg max-w-[90%] ai-markdown ai-markdown-user"
-              style={"background: #{@database.group.color}; color: white;"}
+              style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
             >
               {render_markdown(msg.content)}
             </div>
@@ -349,7 +349,7 @@
         type="submit"
         disabled={@loading}
         class="px-2 py-1.5 rounded text-xs font-medium"
-        style={"background: #{@database.group.color}; color: white;"}
+        style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
       >
         <.icon name="lucide-send" class="size-3.5" />
       </button>

@@ -108,7 +108,7 @@
           <%= if MapSet.size(@visible_columns) < length(@columns) do %>
             <span
               class="ml-1 px-1 rounded-full text-[9px] font-medium"
-              style={"background: #{@database.group.color}; color: white;"}
+              style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
             >
               {MapSet.size(@visible_columns)}
             </span>
@@ -162,7 +162,7 @@
         <%= if active_filter_count(@filters) > 0 do %>
           <span
             class="ml-1 px-1 rounded-full text-[9px] font-medium"
-            style={"background: #{@database.group.color}; color: white;"}
+            style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
           >
             {active_filter_count(@filters)}
           </span>
@@ -178,7 +178,7 @@
         <div class="w-px h-4" style="background: var(--border-medium);"></div>
         <button
           class="px-2 py-1 rounded flex items-center font-medium"
-          style={"background: #{@database.group.color}; color: white;"}
+          style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
           phx-click="apply-changes"
           phx-target={@myself}
         >
@@ -1438,8 +1438,8 @@
         </button>
         <button
           type="submit"
-          class="px-3 py-1.5 text-xs rounded font-medium text-white"
-          style={"background: #{@database.group.color};"}
+          class="px-3 py-1.5 text-xs rounded font-medium"
+          style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
         >
           <.icon name="lucide-plus" class="size-4 mr-1" /> Insert Row
         </button>

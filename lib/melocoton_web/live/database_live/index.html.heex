@@ -413,8 +413,8 @@
                   /> Test
                 </.link>
                 <.link
-                  class="px-2 py-1 text-[10px] rounded text-white font-medium"
-                  style={"background: #{group.color};"}
+                  class="px-2 py-1 text-[10px] rounded font-medium"
+                  style={"background: #{group.color}; color: #{contrast_foreground(group.color)};"}
                   patch={~p"/databases/#{database}/run"}
                 >
                   Connect

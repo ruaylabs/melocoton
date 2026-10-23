@@ -253,8 +253,8 @@
         <%!-- Connection pill (two-part) --%>
         <div class="flex items-center mr-3 rounded overflow-hidden text-xs">
           <div
-            class="px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-white"
-            style={"background: #{@database.group.color};"}
+            class="px-2 py-1 text-[10px] font-medium uppercase tracking-wide"
+            style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
           >
             {@database.group.name}
           </div>
@@ -348,8 +348,8 @@
         <%!-- Run button with inline shortcut --%>
         <button
           id="run-query-btn"
-          class="px-3 py-1 text-xs text-white rounded hover:opacity-90 flex items-center font-medium disabled:opacity-50"
-          style={"background: #{@database.group.color};"}
+          class="px-3 py-1 text-xs rounded hover:opacity-90 flex items-center font-medium disabled:opacity-50"
+          style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
           phx-hook="RunQueryButton"
           disabled={@running_query}
         >
