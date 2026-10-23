@@ -1,0 +1,44 @@
+---
+name: Audit
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache: true
+          cache-workspaces: src-tauri
+
+      - name: Audit (cargo audit)
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
+        working-directory: src-tauri
+
+  elixir:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          version-file: mise.toml
+          version-type: strict
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Audit (mix deps.audit)
+        run: mix deps.audit --ignore-file .deps_audit_ignore
