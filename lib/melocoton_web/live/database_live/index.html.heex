@@ -101,9 +101,12 @@
     </aside>
 
     <%!-- Main content --%>
-    <main class="flex-1 flex flex-col overflow-hidden" style="background: var(--bg-primary);">
+    <main
+      class="min-w-0 flex-1 flex flex-col overflow-hidden"
+      style="background: var(--bg-primary);"
+    >
       <%!-- Toolbar --%>
-      <div class="flex items-center app-toolbar">
+      <div id="connection-toolbar" class="flex flex-wrap shrink-0 items-center gap-2 app-toolbar">
         <div id="connection-toolbar-actions" class="flex flex-wrap items-center gap-2">
           <.link
             class="h-8 px-3 text-xs font-medium rounded inline-flex items-center justify-center gap-1.5 whitespace-nowrap bg-app-accent-light text-white hover:bg-app-accent-light/90"
@@ -131,7 +134,7 @@
           id="database-type-filters"
           role="group"
           aria-label="Filter connections by database type"
-          class="flex items-center gap-2 ml-3"
+          class="flex flex-wrap items-center gap-2"
         >
           <button
             :for={type <- ~w(postgres mysql sqlite)a}
@@ -167,8 +170,8 @@
           </button>
         </div>
 
-        <div class="flex-1"></div>
-        <div class="relative">
+        <div class="hidden xl:block flex-1"></div>
+        <div class="relative min-w-0 w-full sm:w-48">
           <.form for={@search_form} phx-change="validate-search">
             <.input
               field={@search_form[:term]}
@@ -185,7 +188,7 @@
         </div>
 
         <button
-          class="icon-btn ml-2"
+          class="icon-btn shrink-0"
           phx-click={show_modal("settings-modal")}
           title="Settings"
           aria-label="Settings"

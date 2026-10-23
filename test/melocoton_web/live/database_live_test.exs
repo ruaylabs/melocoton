@@ -20,6 +20,8 @@ defmodule MelocotonWeb.DatabaseLiveTest do
   test "toolbar actions have consistent sizing and spacing", %{conn: conn} do
     {:ok, index_live, _html} = live(conn, ~p"/databases")
 
+    assert has_element?(index_live, "#connection-toolbar.flex-wrap.shrink-0.gap-2")
+    assert has_element?(index_live, "#database-type-filters.flex-wrap")
     assert has_element?(index_live, "#connection-toolbar-actions.flex.gap-2")
 
     refute has_element?(index_live, "#connection-toolbar-actions > button", "Import")

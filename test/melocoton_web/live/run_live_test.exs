@@ -90,6 +90,18 @@ defmodule MelocotonWeb.SQLLive.RunTest do
   end
 
   describe "Run LiveView" do
+    test "workspace toolbar wraps without shrinking primary controls", %{
+      conn: conn,
+      database: database
+    } do
+      {:ok, live_view, _html} = live(conn, ~p"/databases/#{database.id}/run")
+
+      assert has_element?(live_view, "#panel-main.min-w-0")
+      assert has_element?(live_view, "#workspace-toolbar.flex-wrap.shrink-0.gap-2")
+      assert has_element?(live_view, "#workspace-toolbar #run-query-btn.shrink-0")
+      assert has_element?(live_view, "#workspace-toolbar button[aria-label='Settings']")
+    end
+
     test "shows matching and total rows only while filtering results", %{
       conn: conn,
       database: database

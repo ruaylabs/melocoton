@@ -244,22 +244,24 @@
 
     <%!-- Main Content Area --%>
     <main
-      class="flex-1 flex flex-col overflow-hidden"
+      class="min-w-0 flex-1 flex flex-col overflow-hidden"
       style="background: var(--bg-primary);"
       id="panel-main"
     >
       <%!-- Toolbar with connection pill and actions --%>
-      <div class="flex items-center app-toolbar">
+      <div id="workspace-toolbar" class="flex flex-wrap shrink-0 items-center gap-2 app-toolbar">
         <%!-- Connection pill (two-part) --%>
-        <div class="flex items-center mr-3 rounded overflow-hidden text-xs">
+        <div class="flex min-w-0 max-w-full items-center rounded overflow-hidden text-xs">
           <div
-            class="px-2 py-1 text-[10px] font-medium uppercase tracking-wide"
+            class="min-w-0 truncate px-2 py-1 text-[10px] font-medium uppercase tracking-wide"
+            title={@database.group.name}
             style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
           >
             {@database.group.name}
           </div>
           <div
-            class="px-2.5 py-1 flex items-center"
+            class="min-w-0 truncate px-2.5 py-1"
+            title={@database.name}
             style="background: var(--bg-tertiary); color: var(--text-secondary);"
           >
             {@database.name}
@@ -275,7 +277,7 @@
         </span>
 
         <%!-- File actions group --%>
-        <div class="flex items-center gap-0.5 mr-2">
+        <div class="flex shrink-0 items-center gap-0.5">
           <button
             class="icon-btn"
             title="Save query"
@@ -349,7 +351,7 @@
         <%!-- Run button with inline shortcut --%>
         <button
           id="run-query-btn"
-          class="px-3 py-1 text-xs rounded hover:opacity-90 flex items-center font-medium disabled:opacity-50"
+          class="shrink-0 px-3 py-1 text-xs rounded hover:opacity-90 flex items-center font-medium disabled:opacity-50"
           style={"background: #{@database.group.color}; color: #{contrast_foreground(@database.group.color)};"}
           phx-hook="RunQueryButton"
           disabled={@running_query}
@@ -372,10 +374,11 @@
           </span>
         </button>
 
-        <div class="w-px h-5 mx-2" style="background: var(--border-medium);"></div>
+        <div class="hidden sm:block shrink-0 w-px h-5" style="background: var(--border-medium);">
+        </div>
 
         <%!-- Utility toggles group --%>
-        <div class="flex items-center gap-0.5">
+        <div class="flex shrink-0 items-center gap-0.5">
           <button
             class="icon-btn"
             phx-click={show_modal("diagram-modal")}
