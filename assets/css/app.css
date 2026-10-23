@@ -44,9 +44,9 @@
 
   /* Syntax highlighting */
   --syntax-keyword:   #6d28d9;
-  --syntax-table:     #059669;
-  --syntax-number:    #c2410c;
-  --syntax-comment:   #78716c;
+  --syntax-table:     #047857;
+  --syntax-number:    #9a3412;
+  --syntax-comment:   #69625d;
   --syntax-string:    #b45309;
   --syntax-lineno:    #d6d3d1;
 
@@ -90,7 +90,7 @@
   --syntax-keyword:   #818cf8;
   --syntax-table:     #34d399;
   --syntax-number:    #fb923c;
-  --syntax-comment:   #57534e;
+  --syntax-comment:   #a8a29e;
   --syntax-string:    #fbbf24;
   --syntax-lineno:    #44403c;
 
@@ -369,13 +369,13 @@ input:focus, button:active, textarea:focus, select:focus,
 }
 [data-theme="light"] .cell-bool-false {
   background: #fef2f2;
-  color: #dc2626;
+  color: #b91c1c;
 }
 
 .cell-null {
   display: inline-block;
   background: var(--bg-tertiary);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 10px;
   font-style: normal;
   padding: 1px 6px;
@@ -399,7 +399,7 @@ input:focus, button:active, textarea:focus, select:focus,
   display: inline-block;
 }
 [data-theme="light"] .cell-url {
-  color: #2563eb;
+  color: #1d4ed8;
 }
 
 .cell-array {
@@ -427,7 +427,7 @@ input:focus, button:active, textarea:focus, select:focus,
   display: inline-block;
 }
 [data-theme="light"] .cell-json {
-  color: #c2410c;
+  color: #9a3412;
 }
 
 .cell-long-text {
@@ -440,7 +440,7 @@ input:focus, button:active, textarea:focus, select:focus,
 }
 
 .cell-expandable:hover {
-  opacity: 0.8;
+  text-decoration: underline;
 }
 
 .cell-number {
@@ -448,11 +448,11 @@ input:focus, button:active, textarea:focus, select:focus,
   color: #22d3ee;
 }
 [data-theme="light"] .cell-number {
-  color: #0891b2;
+  color: #0e7490;
 }
 
 .cell-pk {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 11px;
 }
 
