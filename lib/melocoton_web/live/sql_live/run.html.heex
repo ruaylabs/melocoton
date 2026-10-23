@@ -336,12 +336,13 @@
           </button>
         </div>
 
-        <button
+        <span
           :if={@running_transaction?}
-          class="px-2 py-1 text-xs bg-transaction-active-light text-transaction-active rounded hover:bg-transaction-active-medium flex items-center mr-2 transaction-pulse"
+          role="status"
+          class="px-2 py-1 text-xs bg-transaction-active-light text-transaction-active rounded flex items-center mr-2 transaction-pulse"
         >
           <.icon name="lucide-arrow-left-right" class="size-4 mr-1.5" /> Transaction Active
-        </button>
+        </span>
 
         <div class="flex-1"></div>
 
