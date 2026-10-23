@@ -90,6 +90,32 @@ defmodule MelocotonWeb.SQLLive.RunTest do
   end
 
   describe "Run LiveView" do
+    test "shows matching and total rows only while filtering results", %{
+      conn: conn,
+      database: database
+    } do
+      {:ok, live_view, _html} = live(conn, ~p"/databases/#{database.id}/run")
+      render_click(live_view, "run-query", %{"query" => "SELECT * FROM users"})
+
+      refute has_element?(live_view, "#search-match-count")
+
+      for {term, count} <- [{"alice", 1}, {"missing", 0}, {"ALICE", 1}, {"", nil}] do
+        live_view
+        |> element("form[phx-change='validate-filter-results']")
+        |> render_change(%{"term" => term})
+
+        if count do
+          assert has_element?(
+                   live_view,
+                   "#search-match-count[role='status']",
+                   "#{count} of 2 rows"
+                 )
+        else
+          refute has_element?(live_view, "#search-match-count")
+        end
+      end
+    end
+
     test "mounts and renders the database name", %{conn: conn, database: database} do
       {:ok, _live, html} = live(conn, ~p"/databases/#{database.id}/run")
 
