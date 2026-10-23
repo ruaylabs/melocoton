@@ -54,7 +54,7 @@ defmodule MelocotonWeb.CoreComponents do
       data-show-modal={show_modal(@id)}
       class="relative z-50 hidden"
     >
-      <div class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
           id={"#{@id}-bg"}
           class="absolute inset-0 bg-black/40"
@@ -65,11 +65,11 @@ defmodule MelocotonWeb.CoreComponents do
           phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
           phx-key="escape"
           phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-          class={"relative w-full #{@max_width} mx-auto rounded-lg shadow-xl overflow-hidden z-10"}
+          class={"relative flex flex-col max-h-[calc(100dvh-2rem)] w-full #{@max_width} mx-auto rounded-lg shadow-xl overflow-hidden z-10"}
           style="background: var(--bg-primary); border: 1px solid var(--border-medium);"
         >
           <div
-            class="px-4 py-3 flex items-center justify-between"
+            class="px-4 py-3 flex shrink-0 items-center justify-between"
             style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-medium);"
           >
             <div class="flex items-center gap-2 text-sm font-medium">
@@ -86,7 +86,7 @@ defmodule MelocotonWeb.CoreComponents do
             </button>
           </div>
 
-          <div id={"#{@id}-content"}>
+          <div id={"#{@id}-content"} class="min-h-0 overflow-y-auto">
             {render_slot(@inner_block)}
           </div>
         </.focus_wrap>
@@ -780,7 +780,15 @@ defmodule MelocotonWeb.CoreComponents do
       time: 100,
       transition: {"transition-all transform ease-out duration-100", "opacity-0", "opacity-100"}
     )
-    |> show("##{id}-container")
+    |> JS.show(
+      to: "##{id}-container",
+      display: "flex",
+      time: 100,
+      transition:
+        {"transition-all transform ease-out duration-100",
+         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
+         "opacity-100 translate-y-0 sm:scale-100"}
+    )
     |> JS.add_class("overflow-hidden", to: "body")
     |> JS.focus_first(to: "##{id}-content")
   end
