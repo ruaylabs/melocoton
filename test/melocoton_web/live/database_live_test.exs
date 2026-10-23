@@ -17,6 +17,24 @@ defmodule MelocotonWeb.DatabaseLiveTest do
     %{database: database}
   end
 
+  test "empty-state New Connection uses the defined accent background", %{conn: conn} do
+    {:ok, index_live, _html} = live(conn, ~p"/databases")
+
+    Melocoton.Repo.delete_all(Melocoton.Databases.Database)
+    Melocoton.Repo.delete_all(Melocoton.Databases.Group)
+    render_change(index_live, "validate-search", %{"term" => ""})
+
+    assert has_element?(
+             index_live,
+             "#empty-state-new-connection.bg-app-accent-light.text-white"
+           )
+
+    refute has_element?(index_live, "#empty-state-new-connection[style]")
+
+    index_live |> element("#empty-state-new-connection") |> render_click()
+    assert_patch(index_live, ~p"/databases/new")
+  end
+
   describe "Index" do
     setup [:create_database]
 
