@@ -551,6 +551,10 @@ tr.row-selected {
   border: 0.5px solid var(--border-subtle);
 }
 
+.ai-markdown :not(pre) > code {
+  color: var(--text-primary);
+}
+
 .ai-markdown pre code {
   padding: 0;
   background: transparent;

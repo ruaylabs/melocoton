@@ -33,6 +33,26 @@ defmodule MelocotonWeb.ThemeContrastTest do
     end
   end
 
+  for theme <- ["light", "dark"] do
+    test "#{theme} chat inline code uses contrasting theme colors instead of bubble text" do
+      tokens = declarations(~s([data-theme="#{unquote(theme)}"]))
+      code = declarations(".ai-markdown code")
+      inline_code = declarations(".ai-markdown :not(pre) > code")
+
+      assert inline_code["color"] == "var(--text-primary)"
+
+      assert_contrast(
+        resolve(inline_code["color"], tokens),
+        resolve(code["background"], tokens)
+      )
+
+      # Fenced code remains transparent and keeps its inherited/syntax colors.
+      block_code = declarations(".ai-markdown pre code")
+      assert block_code["background"] == "transparent"
+      refute Map.has_key?(block_code, "color")
+    end
+  end
+
   defp declarations(selector) do
     case Regex.run(~r/(?:^|\n)#{Regex.escape(selector)}\s*\{([^}]+)\}/, @css) do
       [_, body] ->
