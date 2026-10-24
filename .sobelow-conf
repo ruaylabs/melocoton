@@ -1,0 +1,4 @@
+[
+  # The desktop app serves HTTP on loopback; HTTPS and CSP are not enforced by Phoenix.
+  ignore: ["Config.HTTPS", "Config.CSP"]
+]

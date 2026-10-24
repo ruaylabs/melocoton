@@ -81,6 +81,7 @@ defmodule Melocoton.MixProject do
       {:csv, "~> 3.2"},
       {:elixlsx, "~> 0.6"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.16.0", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:req_llm, "~> 1.8"},
       {:earmark, "~> 1.4"},

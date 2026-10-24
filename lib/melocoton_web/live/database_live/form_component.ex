@@ -234,17 +234,18 @@ defmodule MelocotonWeb.DatabaseLive.FormComponent do
   defp maybe_build_url(params, _type, _assigns), do: params
 
   defp extract_pg_fields(params, assigns, default_port) do
-    fields = ~w(host port user password database)
+    fields = [:host, :port, :user, :password, :database]
     defaults = %{"host" => "localhost", "port" => default_port}
 
     Map.new(fields, fn field ->
       pg_key = "pg_#{field}"
+      field_key = Atom.to_string(field)
 
       value =
-        params[pg_key] || Map.get(assigns, String.to_existing_atom(pg_key)) || defaults[field] ||
+        params[pg_key] || Map.get(assigns, String.to_existing_atom(pg_key)) || defaults[field_key] ||
           ""
 
-      {String.to_atom(field), value}
+      {field, value}
     end)
   end
 

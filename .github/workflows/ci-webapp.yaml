@@ -37,5 +37,8 @@ jobs:
           mix deps.get
           mix compile
 
+      - name: Run Sobelow security analysis
+        run: mix sobelow --format github --exit medium
+
       - name: Run linters and tests
         run: mix ci
