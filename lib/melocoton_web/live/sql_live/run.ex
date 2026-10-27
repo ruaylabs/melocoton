@@ -4,6 +4,7 @@ defmodule MelocotonWeb.SQLLive.Run do
   require Logger
   alias Melocoton.{DatabaseClient, Databases, Pool, Settings, TransactionSession}
   import MelocotonWeb.SqlLive.SidebarComponents, only: [section: 1]
+  import MelocotonWeb.SqlLive.QueryPlanComponent, only: [chart: 1]
 
   @max_rows 1_000
 
@@ -53,6 +54,7 @@ defmodule MelocotonWeb.SQLLive.Run do
     |> assign(:last_query, nil)
     |> assign(:result_truncated, false)
     |> assign(:active_result_tab, :results)
+    |> assign(:query_plan, nil)
     |> assign(:query_history, [])
     |> assign(:running_query, false)
     |> assign(:renaming_tab_index, nil)
@@ -407,7 +409,12 @@ defmodule MelocotonWeb.SQLLive.Run do
   end
 
   def handle_event("switch-result-tab", %{"tab" => tab}, socket) do
-    tab = String.to_existing_atom(tab)
+    tab =
+      case tab do
+        "history" -> :history
+        "plan" when not is_nil(socket.assigns.query_plan) -> :plan
+        _ -> :results
+      end
 
     if tab == :history do
       history = Databases.list_query_history(socket.assigns.database.id)
@@ -634,8 +641,20 @@ defmodule MelocotonWeb.SQLLive.Run do
   defp apply_query_result(socket, query, {:ok, result, total_time, truncated}) do
     record_query_history(socket.assigns.database.id, query, :success, total_time, result.num_rows)
 
+    plan =
+      Melocoton.QueryPlan.from_result(query, result, socket.assigns.database.type,
+        truncated: truncated
+      )
+
+    tab =
+      cond do
+        plan -> :plan
+        socket.assigns.active_result_tab == :plan -> :results
+        true -> socket.assigns.active_result_tab
+      end
+
     socket
-    |> assign(result: result)
+    |> assign(result: result, query_plan: plan, active_result_tab: tab)
     |> assign(query_time: total_time)
     |> assign(last_query: query)
     |> assign(:error_message, nil)
@@ -647,6 +666,8 @@ defmodule MelocotonWeb.SQLLive.Run do
     record_query_history(socket.assigns.database.id, query, :error, total_time, 0, reason)
 
     socket
+    |> assign(:query_plan, nil)
+    |> assign(:active_result_tab, :results)
     |> assign(:error_message, reason)
     |> maybe_refresh_history()
   end
@@ -729,10 +750,7 @@ defmodule MelocotonWeb.SQLLive.Run do
     socket
   end
 
-  defp explain_query?(nil), do: false
-
-  defp explain_query?(query),
-    do: query |> String.trim() |> String.downcase() |> String.starts_with?("explain")
+  defp explain_query?(query), do: Melocoton.QueryPlan.explain?(query)
 
   defp write_query?(normalized) do
     Regex.match?(~r/^(insert|update|delete|drop|alter|create|truncate|replace)\b/, normalized)

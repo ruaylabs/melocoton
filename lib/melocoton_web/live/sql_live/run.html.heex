@@ -551,9 +551,11 @@
                     :for={
                       {label, tab} <- [
                         {gettext("Results"), :results},
+                        {"Plan", :plan},
                         {"History", :history}
                       ]
                     }
+                    :if={tab != :plan or not is_nil(@query_plan)}
                     class="px-3 py-1.5 font-medium hover:bg-black/5 dark:hover:bg-white/5"
                     style={
                       if @active_result_tab == tab do
@@ -647,6 +649,14 @@
                   <.icon name="lucide-loader-2" class="size-5 mx-auto animate-spin opacity-50" />
                   <p>Running query...</p>
                 </div>
+              </div>
+
+              <div
+                :if={@active_result_tab == :plan and not is_nil(@query_plan) and !@running_query}
+                id="query-plan-panel"
+                class="flex-1 min-h-0 overflow-auto"
+              >
+                <.chart plan={@query_plan} />
               </div>
 
               <%!-- History tab content --%>

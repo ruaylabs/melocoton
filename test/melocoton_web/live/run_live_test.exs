@@ -90,6 +90,42 @@ defmodule MelocotonWeb.SQLLive.RunTest do
   end
 
   describe "Run LiveView" do
+    test "EXPLAIN QUERY PLAN opens a chart and retains the raw results", %{
+      conn: conn,
+      database: database
+    } do
+      {:ok, view, _html} = live(conn, ~p"/databases/#{database.id}/run")
+
+      render_click(view, "run-query", %{
+        "query" => "-- visualize\nEXPLAIN QUERY PLAN SELECT * FROM users"
+      })
+
+      assert has_element?(view, "#query-plan-chart", "SCAN users")
+      assert has_element?(view, "#query-plan-chart", "Full scan")
+      refute has_element?(view, "#query-plan-chart [data-hotspot='true']")
+      assert has_element?(view, "button[phx-value-tab='plan']", "Plan")
+      view |> element("button[phx-value-tab='results']") |> render_click()
+      refute has_element?(view, "#query-plan-chart")
+      assert render(view) =~ "SCAN users"
+      view |> element("button[phx-value-tab='plan']") |> render_click()
+      assert has_element?(view, "#query-plan-chart")
+
+      render_click(view, "run-query", %{"query" => "SELECT * FROM users"})
+      refute has_element?(view, "#query-plan-chart")
+      refute has_element?(view, "button[phx-value-tab='plan']")
+      assert render(view) =~ "alice"
+    end
+
+    test "query errors clear a stale plan and show the error", %{conn: conn, database: database} do
+      {:ok, view, _html} = live(conn, ~p"/databases/#{database.id}/run")
+      render_click(view, "run-query", %{"query" => "EXPLAIN QUERY PLAN SELECT * FROM users"})
+      assert has_element?(view, "#query-plan-chart")
+      render_click(view, "run-query", %{"query" => "SELECT * FROM missing_plan_table"})
+      refute has_element?(view, "#query-plan-chart")
+      refute has_element?(view, "button[phx-value-tab='plan']")
+      assert render(view) =~ "missing_plan_table"
+    end
+
     test "workspace toolbar wraps without shrinking primary controls", %{
       conn: conn,
       database: database

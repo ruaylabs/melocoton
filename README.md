@@ -22,6 +22,9 @@ and packaged as a native desktop app with Tauri.
 - **Keyboard-native** — every action is reachable from the keyboard; shortcut hints shown inline
 - **SQL editor** — CodeMirror-powered editor with syntax highlighting, auto-completion, and optional Vim mode
 - **Transaction support** — interactive transactions with explicit commit/rollback control
+- **Query plans** — tree charts for PostgreSQL EXPLAIN (text/JSON), MySQL tabular/JSON/TREE,
+  and SQLite EXPLAIN QUERY PLAN, with relative hotspots and engine-specific scan/sort warnings.
+  [Plan formats and highlighting semantics](docs/query-plans.md); raw results are preserved.
 - **Table explorer** — browse schemas, tables, indexes, columns, and foreign keys
 - **Multiple databases** — connect to several databases and switch between them instantly
 - **Connection groups** — organize databases by project, environment, or team with color-coded labels
