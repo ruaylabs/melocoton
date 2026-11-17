@@ -51,11 +51,13 @@
   --syntax-lineno:    #d6d3d1;
 
   /* Scrollbar */
-  --scrollbar-thumb:       #888;
-  --scrollbar-thumb-hover: #666;
+  --scrollbar-thumb:       #78716c;
+  --scrollbar-thumb-hover: #57534e;
 
   /* Focus */
   --focus-color: #0078d7;
+  --selection-bg: #006bc0;
+  --selection-text: #ffffff;
 }
 
 /* Dark mode */
@@ -95,11 +97,13 @@
   --syntax-lineno:    #44403c;
 
   /* Scrollbar */
-  --scrollbar-thumb:       #555;
-  --scrollbar-thumb-hover: #444;
+  --scrollbar-thumb:       #928b86;
+  --scrollbar-thumb-hover: #a8a29e;
 
   /* Focus */
   --focus-color: #3b99fc;
+  --selection-bg: #3b99fc;
+  --selection-text: #1c1c1a;
 }
 
 /* ===== Environment Color Constants ===== */
@@ -141,12 +145,14 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb, #888);
+  background: var(--scrollbar-thumb, #78716c);
+  background-clip: padding-box;
+  border: 2px solid transparent;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover, #666);
+  background-color: var(--scrollbar-thumb-hover, #57534e);
 }
 
 /* Native-like focus styles */
@@ -157,8 +163,40 @@ html {
 
 /* Native-like selection */
 ::selection {
-  background-color: #0078d7;
-  color: white;
+  background-color: var(--selection-bg, #006bc0);
+  color: var(--selection-text, #ffffff);
+}
+
+/* Only controls are chrome; their surrounding content remains selectable. */
+button, [role="button"], [role="tab"],
+.app-sidebar [phx-click], [phx-click="activate-tab"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Editable/selectable content takes precedence even inside chrome. */
+input, textarea, select, [contenteditable], [data-selectable],
+.result-table, .cm-editor, .ai-markdown, .error-banner {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+:is(button, [role="button"], [role="tab"]) :is(img, a) {
+  -webkit-user-drag: none;
+}
+
+@media (forced-colors: active) {
+  ::selection {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+
+  ::-webkit-scrollbar,
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-thumb,
+  ::-webkit-scrollbar-thumb:hover {
+    all: revert;
+  }
 }
 
 /* Remove textarea resize handle */

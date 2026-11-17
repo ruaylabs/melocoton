@@ -920,6 +920,22 @@ function applyTheme(preference) {
   const resolved = resolveTheme(preference);
   document.documentElement.setAttribute("data-theme", resolved);
   localStorage.setItem("theme", preference);
+  if (window.__TAURI__) {
+    let revealed = false;
+    const reveal = () => {
+      if (revealed) return;
+      revealed = true;
+      window.__TAURI__.core
+        .invoke("theme_ready", {
+          preference,
+          dark: resolved === "dark",
+        })
+        .catch(console.error);
+    };
+    requestAnimationFrame(() => requestAnimationFrame(reveal));
+    // Some webviews suspend animation frames while the native window is hidden.
+    setTimeout(reveal, 100);
+  }
   window.dispatchEvent(
     new CustomEvent("theme-changed", { detail: { theme: resolved } }),
   );
@@ -927,7 +943,17 @@ function applyTheme(preference) {
 
 // Apply initial theme
 const savedTheme = localStorage.getItem("theme") || "system";
-applyTheme(savedTheme);
+if (window.__TAURI__) {
+  window.__TAURI__.core
+    .invoke("saved_theme")
+    .then(applyTheme)
+    .catch((error) => {
+      console.error(error);
+      applyTheme(savedTheme);
+    });
+} else {
+  applyTheme(savedTheme);
+}
 
 // Listen for system preference changes
 window
@@ -997,6 +1023,22 @@ window.addEventListener("phx:set-editor-mode", (event) => {
 // this only work when running through Tauri web view
 if (window.__TAURI__) {
   const { invoke } = window.__TAURI__.core;
+
+  document.addEventListener("contextmenu", (event) => {
+    if (event.defaultPrevented || !(event.target instanceof Element)) return;
+
+    // Content and custom menus take precedence over chrome, even when nested.
+    const content =
+      "input, textarea, select, [contenteditable], [data-selectable], " +
+      ".result-table, .cm-editor, .ai-markdown, .error-banner, " +
+      "[data-context-menu], [role='menu'], a[href], pre, code";
+    if (event.target.closest(content)) return;
+
+    const chrome =
+      ".app-toolbar, button, [role='button'], [role='tab'], " +
+      ".app-sidebar [phx-click], [phx-click='activate-tab']";
+    if (event.target.closest(chrome)) event.preventDefault();
+  });
 
   document.addEventListener("keydown", async (event) => {
     if (event.metaKey && event.key === "n") {

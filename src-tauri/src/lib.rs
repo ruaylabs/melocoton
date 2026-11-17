@@ -37,8 +37,58 @@ fn open_new_window(app_handle: tauri::AppHandle, state: State<'_, Mutex<AppData>
         tauri::WebviewUrl::App((raw_url).into()),
     )
     .title("Melocoton")
+    .inner_size(1024.0, 768.0)
+    .visible(false)
     .build()
     .unwrap();
+}
+
+// Unlike webview localStorage, this preference survives changes to the sidecar port
+// and is shared by the bundled splash and every application window.
+#[tauri::command]
+fn saved_theme(app: tauri::AppHandle) -> Result<String, String> {
+    let path = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("theme");
+    match fs::read_to_string(path) {
+        Ok(preference) if valid_theme(&preference) => Ok(preference),
+        Ok(_) => Ok("system".into()),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok("system".into()),
+        Err(error) => Err(error.to_string()),
+    }
+}
+
+fn valid_theme(preference: &str) -> bool {
+    matches!(preference, "light" | "dark" | "system")
+}
+
+#[tauri::command]
+fn theme_ready(
+    app: tauri::AppHandle,
+    window: tauri::WebviewWindow,
+    preference: String,
+    dark: bool,
+) -> Result<(), String> {
+    if !valid_theme(&preference) {
+        return Err("Invalid theme preference".into());
+    }
+
+    let color = if dark {
+        tauri::window::Color(28, 28, 26, 255)
+    } else {
+        tauri::window::Color(255, 255, 255, 255)
+    };
+    window
+        .set_background_color(Some(color))
+        .map_err(|e| e.to_string())?;
+    window.show().map_err(|e| e.to_string())?;
+
+    // A persistence failure must not leave an otherwise usable window hidden.
+    let directory = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    fs::create_dir_all(&directory).map_err(|e| e.to_string())?;
+    fs::write(directory.join("theme"), preference).map_err(|e| e.to_string())
 }
 
 fn get_available_port() -> Result<u16, Box<dyn Error>> {
@@ -84,7 +134,11 @@ pub fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![open_new_window])
+        .invoke_handler(tauri::generate_handler![
+            open_new_window,
+            saved_theme,
+            theme_ready
+        ])
         .build(tauri::generate_context!())?
         .run(|app, event| {
             if let RunEvent::Exit = event {
@@ -204,7 +258,8 @@ async fn setup(
         let webview = app_handle.get_webview_window("main").unwrap();
         let url = Url::parse(&raw_url)?;
 
-        let _ = webview.navigate(url);
+        webview.hide()?;
+        webview.navigate(url)?;
     }
 
     Ok(())
@@ -296,6 +351,16 @@ fn child_pids(parent: u32) -> Vec<u32> {
 mod tests {
     use super::*;
     use std::path::PathBuf;
+
+    #[test]
+    fn theme_preferences_are_validated() {
+        for preference in ["light", "dark", "system"] {
+            assert!(valid_theme(preference));
+        }
+        for preference in ["", "auto", "dark\n", "../theme"] {
+            assert!(!valid_theme(preference));
+        }
+    }
 
     fn temporary_directory(name: &str) -> PathBuf {
         env::temp_dir().join(format!(
